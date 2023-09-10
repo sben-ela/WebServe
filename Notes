@@ -1,0 +1,93 @@
+HTTP request methods
+HTTP defines a set of request methods to indicate the desired action to be performed for a given resource. Although they can also be nouns, these request methods are sometimes referred to as HTTP verbs. Each of them implements a different semantic, but some common features are shared by a group of them: e.g. a request method can be safe, idempotent, or cacheable.
+
+GET
+The GET method requests a representation of the specified resource. Requests using GET should only retrieve data.
+
+HEAD
+The HEAD method asks for a response identical to a GET request, but without the response body.
+
+POST
+The POST method submits an entity to the specified resource, often causing a change in state or side effects on the server.
+
+PUT
+The PUT method replaces all current representations of the target resource with the request payload.
+
+DELETE
+The DELETE method deletes the specified resource.
+
+CONNECT
+The CONNECT method establishes a tunnel to the server identified by the target resource.
+
+OPTIONS
+The OPTIONS method describes the communication options for the target resource.
+
+TRACE
+The TRACE method performs a message loop-back test along the path to the target resource.
+
+PATCH
+The PATCH method applies partial modifications to a resource.
+
+There are 9 HTTP methods.
+Some of them are:
+GET — Fetch a URL
+HEAD — Fetch information about a URL
+PUT — Store to an URL
+POST — Send form data to a URL and get a response back
+DELETE — Delete a URL GET and POST (forms) are commonly used
+--------------------------------------------------
+
+HTTP response status codes indicate whether a specific HTTP request has been successfully completed. Responses are grouped in five classes:
+
+Informational responses (100 – 199)
+Successful responses (200 – 299)
+Redirection messages (300 – 399)
+Client error responses (400 – 499)
+Server error responses (500 – 599)
+
+For more details visit : https://devdocs.io/http/status
+--------------------------------------------------
+
+https://ncona.com/2019/04/building-a-simple-server-with-cpp/
+for building a simple server with C++, it has : 
+- socket
+- bind
+- listen
+- accept
+- putting it all together
+--------------------------------------------------
+https://archive.ph/IXwIc
+
+socket() creates and initializes a new socket.
+
+bind() associates a socket with a particular local IP address and port number.
+
+listen() is used on the server to cause a TCP socket to listen for new
+connections.
+
+connect() is used on the client to set the remote address and port. In the case of
+TCP, it also establishes a connection.
+
+accept() is used on the server to create a new socket for an incoming TCP
+connection.
+
+send() and recv() are used to send and receive data with a socket.
+
+sendto() and recvfrom() are used to send and receive data from sockets
+without a bound remote address.
+
+close() (Berkeley sockets) and closesocket() (Winsock sockets) are used to
+close a socket. In the case of TCP, this also terminates the connection.
+
+shutdown() is used to close one side of a TCP connection. It is useful to ensure
+an orderly connection teardown.
+
+select() is used to wait for an event on one or more sockets.
+
+getnameinfo() and getaddrinfo() provide a protocol-independent manner
+of working with hostnames and addresses.
+
+setsockopt() is used to change some socket options.
+
+fcntl() (Berkeley sockets) and ioctlsocket() (Winsock sockets) are also used
+to get and set some socket options.
