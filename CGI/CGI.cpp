@@ -1,5 +1,4 @@
 #include "CGI.hpp"
-
 void    Cgi::CgiExecute()
 {
 	int fd[2];
@@ -11,6 +10,7 @@ void    Cgi::CgiExecute()
 	{
 		dup2(1, fd[1]);
 		execve(Path[0], Path, 0);
+		throw(std::runtime_error("Execve Failed"));
 	}
 	waitpid(pid, 0, 0);
 	char buff[100];
@@ -20,6 +20,13 @@ void    Cgi::CgiExecute()
 
 int main()
 {
-	Cgi test("/usr/bin/php-cgi", "test.php");
-	test.CgiExecute();
+	try
+	{
+		Cgi test("/usr/bin/php-cgi", "test.php");
+		test.CgiExecute();
+	}
+	catch(std::exception e)
+	{
+		std::cout << e.what() << std::endl;;
+	}
 }

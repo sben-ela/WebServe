@@ -6,7 +6,7 @@
 /*   By: sben-ela <sben-ela@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/04 12:25:03 by aybiouss          #+#    #+#             */
-/*   Updated: 2023/09/12 21:47:13 by sben-ela         ###   ########.fr       */
+/*   Updated: 2023/09/13 11:26:47 by sben-ela         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -47,3 +47,5 @@
 #include <climits>
 #include <sys/types.h>
 #include <sys/wait.h>
+#include <exception>
+#include <stdexcept>
