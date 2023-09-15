@@ -6,7 +6,7 @@
 /*   By: aybiouss <aybiouss@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/04 17:07:10 by aybiouss          #+#    #+#             */
-/*   Updated: 2023/09/08 10:10:43 by aybiouss         ###   ########.fr       */
+/*   Updated: 2023/09/11 10:05:54 by aybiouss         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,7 +16,7 @@
 
 class Request
 {
-    private:
+    protected:
         std::string     _method;
         std::string     _path;
         std::string     _httpVersion;

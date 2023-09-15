@@ -1,0 +1,9 @@
+request_uri = parse_request_uri(request)
+if request_uri is valid: (kayn)
+    if request_uri exists on the server: (exists on the server's file system or is mapped to a route or location in your server's configuration.)
+        query_params = parse_query_parameters(request_uri)
+        process_request(request_uri, query_params)
+    else:
+        return 404 Not Found response
+else:
+    return 400 Bad Request response

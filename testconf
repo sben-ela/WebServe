@@ -1,0 +1,4 @@
+server {
+	listen 		8000
+    error_page 	404 www/pages_error/404.html
+}

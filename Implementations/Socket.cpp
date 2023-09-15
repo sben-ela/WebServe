@@ -3,14 +3,15 @@
 /*                                                        :::      ::::::::   */
 /*   Socket.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: sben-ela <sben-ela@student.42.fr>          +#+  +:+       +#+        */
+/*   By: aybiouss <aybiouss@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/04 17:12:03 by aybiouss          #+#    #+#             */
-/*   Updated: 2023/09/14 17:02:13 by sben-ela         ###   ########.fr       */
+/*   Updated: 2023/09/14 15:57:48 by aybiouss         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../Includes/Socket.hpp"
+#include "../Includes/Response.hpp"
 
 void Socket::setnonblocking(int *sock)
 {
@@ -106,12 +107,12 @@ int Socket::function() {
             if (FD_ISSET(sd, &read_fds))
             {
                 char buffer[1024] = {0};
-                Request request;
+                Response response;
                 int valread = recv(sd, buffer, 1024, 0);
                 if (valread <= 0) {
                     perror("Read error");
                 }
-                request.parseHttpRequest(buffer, sd);
+                response.parseHttpRequest(buffer, sd);
                 // std::cout << request.getMethod()<< std::endl;
                 // std::cout << request.getPath() << std::endl;
                 // std::cout << request.getHttpVersion() << std::endl;
@@ -119,7 +120,10 @@ int Socket::function() {
                 const char *hello = "HTTP/1.1 200 OK\nContent-Type: text/plain\nContent-Length: 12\n\nHello world!";
                 write(sd, hello, strlen(hello));
                 close(sd);
-                std::cout << request.getResponseStatus() << std::endl;
+                // std::cout << response.getResponseStatus() << std::endl;
+                std::cout << "--------------------" << std::endl;
+                response.Function();
+                std::cout << "--------------------" << std::endl;
                 client_socket[i] = 0;
             }
         }

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Request.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: sben-ela <sben-ela@student.42.fr>          +#+  +:+       +#+        */
+/*   By: aybiouss <aybiouss@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/05 09:27:53 by aybiouss          #+#    #+#             */
-/*   Updated: 2023/09/14 18:05:19 by sben-ela         ###   ########.fr       */
+/*   Updated: 2023/09/12 10:39:26 by aybiouss         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -81,7 +81,7 @@ void Request::parseHttpRequest(const std::string& requestBuffer, int new_socket)
     // std::cout << _header.size() << std::endl;
     // std::cout << "******************************" << std::endl;
     // for (std::map<std::string, std::string>::iterator it = _header.begin(); it != _header.end(); ++it) {
-    //         std::cout << it->first << it->second << std::endl;
+    //         r this task. We will provide our
     // }
     // std::cout << std::endl;
     // std::cout << "******************************" << std::endl;

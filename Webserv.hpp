@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Webserv.hpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: sben-ela <sben-ela@student.42.fr>          +#+  +:+       +#+        */
+/*   By: aybiouss <aybiouss@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/04 12:25:03 by aybiouss          #+#    #+#             */
-/*   Updated: 2023/09/13 11:26:47 by sben-ela         ###   ########.fr       */
+/*   Updated: 2023/09/14 15:59:04 by aybiouss         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,20 +15,26 @@
 #define PORT 8080 // Where the clients can reach at
 #define MAX_CLIENTS 10 // Maximum number of clients to handle
 
+#include <vector>
 #include <stdio.h>
 #include <stdlib.h>
 #include <fstream>
 #include <map>
-#include <vector>
 #include <sstream>
-#include "./Includes/Socket.hpp"
-#include "./Includes/Request.hpp"
-#include "./Includes/CommonEntity.hpp"
-#include "./Includes/ConfigFile.hpp"
-#include "./Includes/Configuration.hpp"
-#include "./Includes/Location.hpp"
-#include "./Includes/Request.hpp"
-#include "./Includes/Response.hpp"
+// #include "./Includes/Location.hpp"
+// #include "./Includes/Socket.hpp"
+// #include "./Includes/Configuration.hpp"
+// #include "./Includes/Servers.hpp"
+// #ifndef REQUEST_HPP
+// #define REQUEST_HPP
+// #include "./Includes/Request.hpp"
+// #endif
+// #ifndef RESPONSE_HPP
+// #define RESPONSE_HPP
+// #include "./Includes/Response.hpp"
+// #endif
+#include <sys/stat.h>
+#include <stack>
 #include <stdlib.h>
 #include <sys/time.h>
 #include <sys/types.h>
@@ -45,7 +51,5 @@
 #include <string>        // For string manipulation
 #include <exception>
 #include <climits>
-#include <sys/types.h>
-#include <sys/wait.h>
-#include <exception>
-#include <stdexcept>
+
+typedef std::vector<std::string>::iterator TokenVectsIter;
