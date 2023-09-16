@@ -1,53 +1,61 @@
 #include "Response.hpp"
 
 
-std::string     _method = "GET";
-std::string     _path = "image.png";
-std::string     _contentType = "mage.png";
-
-
-void Get(int socket)
+void ft_putstr(char *str)
 {
-    std::string header = "HTTP/1.1 200 OK\r\n Content-Type: " + _contentType + "\r\n\r\n";
-    std::ifstream file(_path.c_str(), std::ios::binary);
-    send(socket, header.c_str(), strlen(header.c_str()), 0);
-
-    const int buffer_size = 2312771;
-    char buff[buffer_size];
-
-    while (file) {
-        file.read(buff, buffer_size);
-        int bytes_read = file.gcount();
-        
-        if (bytes_read > 0) {
-            if (send(socket, buff, bytes_read, 0) < 0) {
-                std::cout << "send failed" << std::endl;
-                exit(141);
-            }
+    int i = 0;
+    while (i < BUFFER_SIZE)
+    {
+        if (write (1 , &str[i], 1) < 0)
+        {
+            std::cout << "putstr failed : " << str[i] << std::endl;
+            exit (0);
         }
+        i++;
     }
-    close(socket);
 }
 
 
-// void    response(const Request &request)
-// {
-//     if (request.getMethod() == "GET")
-//     {
-//         Get(request);
-//     }
-//     else if (request.getMethod() == "POST")
-//     {
 
-//     }
-// }
+void    Get(const Client &client)
+{
+    std::string header = client.GetHttpVersion() + " 200 OK\r\nContent-Type: "
+    + client.GetConetType() + "\r\n\r\n";
+    send(client.GetSocketId(), header.c_str(), header.size(), 0);
+    char buff[BUFFER_SIZE];
+    int fd = open (client.GetPath().c_str(), O_RDONLY);
+
+    while (read(fd, buff, BUFFER_SIZE) > 0)
+    {
+        ft_putstr(buff);
+        if (write (client.GetSocketId() , buff, BUFFER_SIZE) < 0)
+        {
+            std::cout << "write failed" << std::endl;
+            exit (141);
+        }
+    }
+    close (fd);
+}
+
+void    Post(const Client& client)
+{
+    
+}
+
+void    Response(const Client &client)
+{
+    if (client.GetMethod() == "GET")
+        Get(client);
+    else if (client.GetMethod() == "POST")
+        Post();
+    // else if (client.GetMethod() == "DELETE")
+    //     Delete();
+}
 
 #include <iostream>
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <cstring>
-
-#define PORT 8080
 
 
 int main() {
@@ -78,7 +86,7 @@ int main() {
         return 1;
     }
 
-    std::cout << "Listening on port " << PORT << "..." << std::endl;
+    // std::cout << "Listening on port " << PORT << "..." << std::endl;
 
     // Accept a new connection
     if ((new_socket = accept(server_fd, (struct sockaddr *)&address, (socklen_t *)&addrlen)) < 0) {
@@ -86,10 +94,8 @@ int main() {
         return 1;
     }
 
-    Get(new_socket);
-    std::cout << "Last Line" << std::endl;
-    sleep(2);
+    Response(Client("GET" , "gif.gif", "image/gif", "HTTP/1.1 ", new_socket));
+
     return 0;
 }
-
 

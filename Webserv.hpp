@@ -3,16 +3,16 @@
 /*                                                        :::      ::::::::   */
 /*   Webserv.hpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: aybiouss <aybiouss@student.42.fr>          +#+  +:+       +#+        */
+/*   By: sben-ela <sben-ela@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/04 12:25:03 by aybiouss          #+#    #+#             */
-/*   Updated: 2023/09/14 15:59:04 by aybiouss         ###   ########.fr       */
+/*   Updated: 2023/09/16 17:56:01 by sben-ela         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #pragma once
 
-#define PORT 8080 // Where the clients can reach at
+#define PORT 7070 // Where the clients can reach at
 #define MAX_CLIENTS 10 // Maximum number of clients to handle
 
 #include <vector>
