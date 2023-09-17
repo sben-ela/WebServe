@@ -1,9 +1,10 @@
 #include "Client.hpp"
 
-Client::Client(std::string method, std::string path, std::string contentType, std::string httpVersion, int socketId)
+Client::Client(std::string method, std::string path, std::string fileExtention, std::string contentType, std::string httpVersion, int socketId)
 {
     _method = method;
     _path = path;
+    _fileExtention = fileExtention;
     _contentType = contentType;
     _httpVersion = httpVersion;
     _socketId = socketId;
@@ -30,6 +31,11 @@ const std::string& Client::GetHttpVersion( void ) const
 }
 
 const int& Client::GetSocketId( void ) const
-{
+{       
     return (_socketId);
+}
+
+const std::string&  Client::GetFileExtention( void ) const
+{       
+    return (_fileExtention);
 }

@@ -6,7 +6,7 @@
 /*   By: sben-ela <sben-ela@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/05 09:26:06 by aybiouss          #+#    #+#             */
-/*   Updated: 2023/09/14 18:34:10 by sben-ela         ###   ########.fr       */
+/*   Updated: 2023/09/17 12:05:57 by sben-ela         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,19 +28,14 @@ std::vector<std::string>    Location::Tokenizations(std::string line)
 
 Location::Location(std::string path, TokenVectsIter& begin, TokenVectsIter& end) : _pattern_exists(false)
 {
-    // Initialize the Location object using the prolude <map>
-#include <iostream>
-
-// ? listen IP : If you specify only an IP address without a port, Nginx will listen on that
-// ? IP address for incoming HTTP requests on the default HTTP port which is port 80
-
-// ? listen PORT : If you specify only a port without an IP address, Nginx will listen on all available
-// ? network interfaces (all IP addresses) for incoming HTTP requests on the specified port.
-
-// ? listen IP PORT : Nginx will listen on the specified IP address and port for incoming HTTP requests.
-
-// ? listen PORT IP : When you specify the IP address after the port, Nginx will behave
-// ? the same way as when you specify listen IP PORT
+    // Initialize the Location object using the provided iterators (assuming they point to strings).
+    if (!path.empty())
+        InitPattern(path);
+    while (begin != end)
+    {
+        std::string line = *begin;
+        std::vector<std::string> token = Tokenizations(line);
+        if (token[0] == "limit_except")
         {
             // Extract and set limit_except values
             ++begin;
@@ -183,24 +178,17 @@ void Location::InitErrorPage(std::string code, std::string path)
 
 void Location::InitCgi(std::string path, std::string lang)
 {
-    // Implement this method to initialize CGI settings.
-    // This is a simplified example; adjust it based on your configuration format.
-    // Split the input value into individual CGI settings
-    // based on your format (e.g., key=value pairs separated by space).
-    // You may use a custom parsing logic here.
-    
-    // For demonstration, let's assume a simple space-separated key=value format.
-        if (!lang.empty() && !path.empty())
-        {
-            // Store the CGI setting in the _cgi map.
-            _cgi[lang] = path;
-        }
-        else
-        {
-            // Handle parsing error if needed.
-            std::string str = "Error parsing CGI setting: " + path + " ";
-            throw std::string(str.append(lang));
-        }
+    if (!lang.empty() && !path.empty())
+    {
+        // Store the CGI setting in the _cgi map.
+        _cgi[lang] = path;
+    }
+    else
+    {
+        // Handle parsing error if needed.
+        std::string str = "Error parsing CGI setting: " + path + " ";
+        throw std::string(str.append(lang));
+    }
 }
 
 void Location::InitRoot(std::string value)

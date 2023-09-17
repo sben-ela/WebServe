@@ -1,4 +1,42 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   Response.cpp                                       :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: sben-ela <sben-ela@student.42.fr>          +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2023/09/17 11:36:51 by sben-ela          #+#    #+#             */
+/*   Updated: 2023/09/17 14:39:49 by sben-ela         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "Response.hpp"
+
+#define FILESIZE 10
+
+std::string	CgiExecute(const Client &client)
+{
+	int fd[2];
+    ssize_t bytesRead;
+    std::string output;
+    char buffer[1024];
+	char *Path[3] = {(char *)"/usr/bin/php-cgi", (char *)client.GetPath().c_str(), NULL};
+
+	pipe(fd);
+	int pid  = fork();
+	if (!pid)
+	{
+		dup2(fd[1], 1);
+		execve(Path[0], Path, 0);
+		std::cout << "ERRRRORRR" << std::endl;
+        exit(0);
+	}
+	waitpid(pid, 0, 0);
+    close(fd[1]);
+    while ((bytesRead = read(fd[0], buffer, sizeof(buffer))) > 0)
+        output.append(buffer, bytesRead);
+	return(output);
+}
 
 
 void ft_putstr(char *str)
@@ -15,39 +53,58 @@ void ft_putstr(char *str)
     }
 }
 
-
-
 void    Get(const Client &client)
 {
-    std::string header = client.GetHttpVersion() + " 200 OK\r\nContent-Type: "
-    + client.GetConetType() + "\r\n\r\n";
-    send(client.GetSocketId(), header.c_str(), header.size(), 0);
     char buff[BUFFER_SIZE];
-    int fd = open (client.GetPath().c_str(), O_RDONLY);
+    std::string header;
+    int fd;
 
-    while (read(fd, buff, BUFFER_SIZE) > 0)
+    header = client.GetHttpVersion() + " 200 OK\r\nContent-Type: "
+    + client.GetConetType() + "\r\ncontent-length: 54" + "\r\n\r\n";
+
+    send(client.GetSocketId(), header.c_str(), header.size(), 0);
+        // throw(std::runtime_error("Send Failed"));/
+    if (client.GetFileExtention() == ".php")
     {
-        ft_putstr(buff);
-        if (write (client.GetSocketId() , buff, BUFFER_SIZE) < 0)
-        {
-            std::cout << "write failed" << std::endl;
-            exit (141);
-        }
+        std::string out = CgiExecute(client);;
+        int rd = write(client.GetSocketId(), out.c_str(), out.size());
+        std::cout << rd << std::endl;
+        std::cout << "i am here " << std::endl;
+        return ;
     }
+    fd = open (client.GetPath().c_str(), O_RDONLY);
+    if (fd < 0)
+        throw(std::runtime_error("open Path in Get failed"));
+    while (read(fd, buff, BUFFER_SIZE) > 0)
+        if (write (client.GetSocketId() , buff, BUFFER_SIZE) < 0)
+            throw(std::runtime_error("Write buff in Get Failed"));
     close (fd);
 }
 
-void    Post(const Client& client)
+std::string GenerateFile( void )
 {
+    std::string Base = "ABCDEFJHIGKLMNOPQRSTUVWXYZabcdefjhiGklmnopqrstuvwxyz+-_";
+    std::string file;
     
+    for (size_t i = 0; i < FILESIZE; i++)
+    {
+        file += Base[rand() % Base.size()];
+    }
+    return(file);
 }
+
+// void    Post(const Client& client, std::string Content)
+// {
+
+// }
 
 void    Response(const Client &client)
 {
+    
     if (client.GetMethod() == "GET")
         Get(client);
-    else if (client.GetMethod() == "POST")
-        Post();
+    // else if (client.GetMethod() == "POST")
+    //     Post();
     // else if (client.GetMethod() == "DELETE")
     //     Delete();
 }
@@ -93,9 +150,11 @@ int main() {
         perror("Accept failed");
         return 1;
     }
-
-    Response(Client("GET" , "gif.gif", "image/gif", "HTTP/1.1 ", new_socket));
-
-    return 0;
+    try
+    {
+        Response(Client("GET" , "test.php", ".php",  "text/plain", "HTTP/1.1 ", new_socket));
+    }
+    catch(std::exception &e){
+        std::cout << "Error : " << e.what() << std::endl;
+    }
 }
-
