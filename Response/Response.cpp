@@ -14,13 +14,24 @@
 
 #define FILESIZE 10
 
+
+void    SeparatesHeader(std::string& str)
+{
+    str = str.substr(str.find("\r\n\r\n") + 4);
+    std::cout << str << std::endl;
+}
+
 std::string	CgiExecute(const Client &client)
 {
 	int fd[2];
     ssize_t bytesRead;
     std::string output;
     char buffer[1024];
-	char *Path[3] = {(char *)"/usr/bin/php-cgi", (char *)client.GetPath().c_str(), NULL};
+
+    std::map<std::string, char*> intrepreter;
+    intrepreter[".php"] = (char *)"/usr/bin/php-cgi";
+    intrepreter[".py"] = (char*)"/usr/bin/python";
+	char *Path[3] = {intrepreter[client.GetFileExtention()], (char *)client.GetPath().c_str(), NULL};
 
 	pipe(fd);
 	int pid  = fork();
@@ -35,6 +46,8 @@ std::string	CgiExecute(const Client &client)
     close(fd[1]);
     while ((bytesRead = read(fd[0], buffer, sizeof(buffer))) > 0)
         output.append(buffer, bytesRead);
+    if (client.GetFileExtention() == ".php")
+        SeparatesHeader(output);
 	return(output);
 }
 
@@ -60,16 +73,14 @@ void    Get(const Client &client)
     int fd;
 
     header = client.GetHttpVersion() + " 200 OK\r\nContent-Type: "
-    + client.GetConetType() + "\r\ncontent-length: 54" + "\r\n\r\n";
+    + client.GetConetType() + "\r\ncontent-length: 11" + "\r\n\r\n";
 
     send(client.GetSocketId(), header.c_str(), header.size(), 0);
-        // throw(std::runtime_error("Send Failed"));/
-    if (client.GetFileExtention() == ".php")
+    if (client.GetFileExtention() == ".php" || client.GetFileExtention() == ".py")
     {
-        std::string out = CgiExecute(client);;
+        std::string out = CgiExecute(client);
+        std::cout << out << std::endl;
         int rd = write(client.GetSocketId(), out.c_str(), out.size());
-        std::cout << rd << std::endl;
-        std::cout << "i am here " << std::endl;
         return ;
     }
     fd = open (client.GetPath().c_str(), O_RDONLY);
@@ -100,7 +111,6 @@ std::string GenerateFile( void )
 
 void    Response(const Client &client)
 {
-    
     if (client.GetMethod() == "GET")
         Get(client);
     // else if (client.GetMethod() == "POST")
@@ -152,7 +162,7 @@ int main() {
     }
     try
     {
-        Response(Client("GET" , "test.php", ".php",  "text/plain", "HTTP/1.1 ", new_socket));
+        Response(Client("GET" , "test.py", ".py",  "text/plain", "HTTP/1.1 ", new_socket));
     }
     catch(std::exception &e){
         std::cout << "Error : " << e.what() << std::endl;
