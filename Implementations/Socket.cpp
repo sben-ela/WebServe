@@ -12,6 +12,7 @@
 
 #include "../Includes/Socket.hpp"
 #include "../Includes/Response.hpp"
+#include "../Response/Response.hpp"
 
 void Socket::setnonblocking(int *sock)
 {
@@ -122,7 +123,9 @@ int Socket::function() {
                 close(sd);
                 // std::cout << response.getResponseStatus() << std::endl;
                 std::cout << "--------------------" << std::endl;
-                response.Function();
+                // response.Function();
+                std::cout << response.getPath() << std::endl;
+                ft_Response(Client(response.getMethod() , response.getPath(), response.getPath().substr(response.getPath().find('.')), "text/plain",response.getHttpVersion(), sd));
                 std::cout << "--------------------" << std::endl;
                 client_socket[i] = 0;
             }

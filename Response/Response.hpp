@@ -17,4 +17,5 @@
 #include "Client.hpp"
 #define BUFFER_SIZE 1024
 
+void    ft_Response(const Client &client);
 

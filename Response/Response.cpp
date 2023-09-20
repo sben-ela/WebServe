@@ -48,6 +48,8 @@ std::string	CgiExecute(const Client &client)
         output.append(buffer, bytesRead);
     if (client.GetFileExtention() == ".php")
         SeparatesHeader(output);
+	else
+		(void)fd;
 	return(output);
 }
 
@@ -81,6 +83,7 @@ void    Get(const Client &client)
         std::string out = CgiExecute(client);
         std::cout << out << std::endl;
         int rd = write(client.GetSocketId(), out.c_str(), out.size());
+		(void)rd;
         return ;
     }
     fd = open (client.GetPath().c_str(), O_RDONLY);
@@ -109,8 +112,10 @@ std::string GenerateFile( void )
 
 // }
 
-void    Response(const Client &client)
+void    ft_Response(const Client &client)
 {
+    std::string responseStr;
+
     if (client.GetMethod() == "GET")
         Get(client);
     // else if (client.GetMethod() == "POST")
@@ -119,52 +124,52 @@ void    Response(const Client &client)
     //     Delete();
 }
 
-#include <iostream>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <cstring>
+// #include <iostream>
+// #include <sys/socket.h>
+// #include <netinet/in.h>
+// #include <cstring>
 
 
-int main() {
+// int main() {
 
-    int server_fd, new_socket;
-    struct sockaddr_in address;
-    int addrlen = sizeof(address);
+//     int server_fd, new_socket;
+//     struct sockaddr_in address;
+//     int addrlen = sizeof(address);
 
-    // Create socket file descriptor
-    if ((server_fd = socket(AF_INET, SOCK_STREAM, 0)) == 0) {
-        perror("Socket creation failed");
-        return 1;
-    }
+//     // Create socket file descriptor
+//     if ((server_fd = socket(AF_INET, SOCK_STREAM, 0)) == 0) {
+//         perror("Socket creation failed");
+//         return 1;
+//     }
 
-    address.sin_family = AF_INET;
-    address.sin_addr.s_addr = INADDR_ANY;
-    address.sin_port = htons(PORT);
+//     address.sin_family = AF_INET;
+//     address.sin_addr.s_addr = INADDR_ANY;
+//     address.sin_port = htons(PORT);
 
-    // Bind the socket to the specified address and port
-    if (bind(server_fd, (struct sockaddr *)&address, sizeof(address)) < 0) {
-        perror("Bind failed");
-        return 1;
-    }
+//     // Bind the socket to the specified address and port
+//     if (bind(server_fd, (struct sockaddr *)&address, sizeof(address)) < 0) {
+//         perror("Bind failed");
+//         return 1;
+//     }
 
-    // Listen for incoming connections
-    if (listen(server_fd, 3) < 0) {
-        perror("Listen failed");
-        return 1;
-    }
+//     // Listen for incoming connections
+//     if (listen(server_fd, 3) < 0) {
+//         perror("Listen failed");
+//         return 1;
+//     }
 
-    // std::cout << "Listening on port " << PORT << "..." << std::endl;
+//     // std::cout << "Listening on port " << PORT << "..." << std::endl;
 
-    // Accept a new connection
-    if ((new_socket = accept(server_fd, (struct sockaddr *)&address, (socklen_t *)&addrlen)) < 0) {
-        perror("Accept failed");
-        return 1;
-    }
-    try
-    {
-        Response(Client("GET" , "test.py", ".py",  "text/plain", "HTTP/1.1 ", new_socket));
-    }
-    catch(std::exception &e){
-        std::cout << "Error : " << e.what() << std::endl;
-    }
-}
+//     // Accept a new connection
+//     if ((new_socket = accept(server_fd, (struct sockaddr *)&address, (socklen_t *)&addrlen)) < 0) {
+//         perror("Accept failed");
+//         return 1;
+//     }
+//     try
+//     {
+//         ft_Response(Client("GET" , "test.py", ".py",  "text/plain", "HTTP/1.1 ", new_socket));
+//     }
+//     catch(std::exception &e){
+//         std::cout << "Error : " << e.what() << std::endl;
+//     }
+// }
