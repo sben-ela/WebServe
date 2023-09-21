@@ -6,13 +6,13 @@
 /*   By: sben-ela <sben-ela@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/04 12:25:03 by aybiouss          #+#    #+#             */
-/*   Updated: 2023/09/17 13:28:18 by sben-ela         ###   ########.fr       */
+/*   Updated: 2023/09/21 09:55:12 by sben-ela         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #pragma once
 
-#define PORT 8082 // Where the clients can reach at
+#define PORT 8081 // Where the clients can reach at
 #define MAX_CLIENTS 10 // Maximum number of clients to handle
 
 #include <vector>
@@ -55,6 +55,8 @@
 #include <cstdlib> // rand
 #include <sys/types.h>
 #include <sys/wait.h>
+#include <sys/stat.h> // stat 
+#include <sys/sysmacros.h>
 
 
 typedef std::vector<std::string>::iterator TokenVectsIter;
