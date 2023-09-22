@@ -1,7 +1,7 @@
 #pragma once
 
 
-#include "../Includes/Request.hpp"
+#include "../Webserv.hpp"
 
 #define BUFFER_SIZE 1024
 

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   main.cpp                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: aybiouss <aybiouss@student.42.fr>          +#+  +:+       +#+        */
+/*   By: sben-ela <sben-ela@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/04 12:25:06 by aybiouss          #+#    #+#             */
-/*   Updated: 2023/09/14 16:34:56 by aybiouss         ###   ########.fr       */
+/*   Updated: 2023/09/21 19:36:12 by sben-ela         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,7 +29,7 @@ int main(int ac, char *av[])
         }
         else
             configFile.ConfigFileParse(av[1]);
-        configFile.printServerData();
+        // ft_Response(Client("GET" , "gif.gif", ".gif",  "image/gif", "HTTP/1.1 ", 1), configFile);
         // Socket s;
         // s.function();
     } catch (std::exception& e)

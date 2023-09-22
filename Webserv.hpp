@@ -6,7 +6,7 @@
 /*   By: sben-ela <sben-ela@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/04 12:25:03 by aybiouss          #+#    #+#             */
-/*   Updated: 2023/09/21 09:55:12 by sben-ela         ###   ########.fr       */
+/*   Updated: 2023/09/21 19:35:42 by sben-ela         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -57,6 +57,10 @@
 #include <sys/wait.h>
 #include <sys/stat.h> // stat 
 #include <sys/sysmacros.h>
-
-
+#include "Response/Client.hpp"
+#include "Response/Response.hpp"
+#include "Includes/Servers.hpp"
+#include "Includes/Socket.hpp"
+#include "Includes/Request.hpp"
+#include "Includes/Servers.hpp"
 typedef std::vector<std::string>::iterator TokenVectsIter;

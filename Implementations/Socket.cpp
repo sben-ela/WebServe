@@ -3,16 +3,15 @@
 /*                                                        :::      ::::::::   */
 /*   Socket.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: aybiouss <aybiouss@student.42.fr>          +#+  +:+       +#+        */
+/*   By: sben-ela <sben-ela@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/04 17:12:03 by aybiouss          #+#    #+#             */
-/*   Updated: 2023/09/14 15:57:48 by aybiouss         ###   ########.fr       */
+/*   Updated: 2023/09/21 19:33:07 by sben-ela         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../Includes/Socket.hpp"
-#include "../Includes/Response.hpp"
-#include "../Response/Response.hpp"
+
 
 void Socket::setnonblocking(int *sock)
 {

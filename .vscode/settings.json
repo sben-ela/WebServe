@@ -3,6 +3,8 @@
         "istream": "cpp",
         "ostream": "cpp",
         "iostream": "cpp",
-        "iosfwd": "cpp"
+        "iosfwd": "cpp",
+        "sstream": "cpp",
+        "exception": "cpp"
     }
 }
