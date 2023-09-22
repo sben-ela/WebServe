@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Client.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: aybiouss <aybiouss@student.42.fr>          +#+  +:+       +#+        */
+/*   By: sben-ela <sben-ela@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/20 13:32:21 by aybiouss          #+#    #+#             */
-/*   Updated: 2023/09/22 14:45:11 by aybiouss         ###   ########.fr       */
+/*   Updated: 2023/09/22 20:32:50 by sben-ela         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,9 +31,9 @@ void    Client::set_socket(int socket)
     _socketId = socket;
 }
 
-Configuration&      Client::getServer()
+const Configuration&      Client::getServer( void ) const
 {
-    return _client_server;
+    return (_client_server);
 }
 
 const int& Client::GetSocketId( void ) const

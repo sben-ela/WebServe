@@ -5,6 +5,7 @@
         "iostream": "cpp",
         "iosfwd": "cpp",
         "sstream": "cpp",
-        "exception": "cpp"
+        "exception": "cpp",
+        "stdexcept": "cpp"
     }
 }

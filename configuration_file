@@ -17,7 +17,7 @@ server
 		root ./www/
 		autoindex on
 	}
-	location 	/gym
+	location 	/gym/bah/blah
 	{
 		allow_methods Post GET
 		root ./www/gym-website-template/

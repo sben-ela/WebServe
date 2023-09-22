@@ -6,7 +6,7 @@
 /*   By: sben-ela <sben-ela@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/17 11:36:51 by sben-ela          #+#    #+#             */
-/*   Updated: 2023/09/22 17:48:11 by sben-ela         ###   ########.fr       */
+/*   Updated: 2023/09/23 00:51:54 by sben-ela         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -50,6 +50,41 @@ void ft_putstr(char *str)
     }
 }
 
+
+size_t getLocationIndex(const Client& client)
+{
+    size_t index;
+
+	index = client.getServer().getLocations().size() - 1;;
+	while (index > 0)
+	{
+		if (client.getServer().getLocations()[index].getpattern() == client.response.getPath().substr(0, client.getServer().getLocations()[index].getpattern().size()))
+			return(index);
+		index--;
+	}
+	return(0);
+}
+
+std::string getFileName(const std::string& path, size_t first)
+{
+    std::string fileName = path.substr(first);
+    if (fileName[0] != '/')
+        return("/" + fileName);
+    return(fileName);
+}
+
+std::string  getFilePath(const Client& client)
+{
+    std::string filePath;
+	size_t index;
+
+	index = getLocationIndex(client);
+        
+	filePath = client.getServer().getRoot() + getFileName(client.response.getPath()
+	, client.getServer().getLocations()[index].getpattern().size());
+	return (filePath);
+}
+
 void    Get(const Client &client)
 {
     char buff[BUFFER_SIZE];
@@ -59,35 +94,38 @@ void    Get(const Client &client)
     int fd;
 
 
-
-    std::string outfile = GenerateFile();
+    // std::cout << getFilePath(client).c_str() << std::endl;;
     if (client.response.GetFileExtention() == ".php" || client.response.GetFileExtention() == ".py")
     {
-        std::map<std::string, char*> intrepreter;
-        intrepreter[".php"] = (char *)"/usr/bin/php-cgi";
-        intrepreter[".py"] = (char*)"/usr/bin/python3";
-        char *Path[3] = {intrepreter[client.response.GetFileExtention()], (char *)client.response.getPath().c_str(), NULL};
+        std::string outfile = GenerateFile();
+        // std::cout << outfile << std::endl;
         int pid  = fork();
         if (!pid)
         {
-            fd = open (outfile.c_str(), O_CREAT | O_RDONLY | O_TRUNC, 0666);
+            std::map<std::string, char*> intrepreter;
+            intrepreter[".php"] = (char *)"/usr/bin/php-cgi";
+            intrepreter[".py"] = (char*)"/usr/bin/python3";
+            std::string filePath  = getFilePath(client);
+            char *Path[3] = {intrepreter[client.response.GetFileExtention()], (char *)filePath.c_str(), NULL};
+            fd = open (outfile.c_str(), O_CREAT | O_RDWR | O_TRUNC, 0666);
             if (fd < 0)
                 throw(std::runtime_error("Open Failed"));
             dup2(fd, 1);
-            close(fd); // ! env itzad
-            execve(Path[0], Path, 0);
+            close(fd);
+            execve(Path[0], Path, 0); // ! env itzad
             std::cout << "ERRRRORRR" << std::endl;
             exit(EXFIALE);
         }
         waitpid(pid, 0, 0);
-        fd = open ("/nfs/homes/sben-ela/Desktop/test/Response/shop/image.png", O_RDWR);
+        fd = open (outfile.c_str(), O_CREAT | O_RDWR , 0777);
         if (fd < 0)
             throw(std::runtime_error("Open Failed"));
+        // std::cout << "read  bytes : " << read(fd, buff, 10) << std::endl;;
     }
     else
     {
         
-        fd = open ("/nfs/homes/sben-ela/Desktop/test/Response/shop/image.png", O_RDONLY);
+        fd = open (getFilePath(client).c_str(), O_RDONLY);
         if (fd < 0)
             throw(std::runtime_error("Open Failed"));
     }
@@ -96,7 +134,7 @@ void    Get(const Client &client)
     // std::cout << "out size " << ss.str() << std::endl;
     header = client.response.getHttpVersion() + " 200 OK\r\nContent-Type: "
     + client.response.getContentType() + "\r\ncontent-length: " + ss.str() + "\r\n\r\n";
-
+    std::cout << header << std::endl;
     send(client.GetSocketId(), header.c_str(), header.size(), 0);
     while (read(fd, buff, BUFFER_SIZE) > 0)
         if (write (client.GetSocketId() , buff, BUFFER_SIZE) < 0)
@@ -110,13 +148,13 @@ void    ft_Response(const Client &client)
 {
     try
     {
-    std::cout << client.response.getPath() << std::endl;
-    // exit(0);
-    Get(client);
+        // std::cout << "FILE : " << getFilePath(client).c_str() << std::endl;
+        Get(client);
+        // exit(0);
     }
     catch(std::exception &e)
     {
-        std::cout << e.what() << "    Ayoub dzebii " << std::endl;
+        std::cout << e.what() << std::endl;
     }
 }
 
