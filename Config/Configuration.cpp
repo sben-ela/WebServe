@@ -6,16 +6,15 @@
 /*   By: aybiouss <aybiouss@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/05 09:26:09 by aybiouss          #+#    #+#             */
-/*   Updated: 2023/09/14 17:23:40 by aybiouss         ###   ########.fr       */
+/*   Updated: 2023/09/22 13:38:30 by aybiouss         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../Includes/Configuration.hpp"
 
 Configuration::Configuration()
-        : _client_max_body_size(0),  _AutoIndex(false), _root_exists(false),
-        _host_exists(false), _port_exists(false) {}
-
+        : _host("localhost"), _client_max_body_size(0),  _AutoIndex(false), _root_exists(false),
+        _port(0), _host_exists(false), _port_exists(false) {}
 std::vector<std::string>    Configuration::Tokenization(std::string line)
 {
     std::vector<std::string> result;
@@ -37,8 +36,8 @@ bool Configuration::isStringAllDigits(const std::string& str) {
 }
 
 Configuration::Configuration(std::vector<std::string> vecteur)
-    : _client_max_body_size(0),  _AutoIndex(false), _root_exists(false),
-    _host_exists(false), _port_exists(false)
+    : _host("127.0.0.1"), _client_max_body_size(0),  _AutoIndex(false), _root_exists(false),
+    _port(0), _host_exists(false), _port_exists(false)
 {
     TokenVectsIter begin = vecteur.begin();
     TokenVectsIter end = vecteur.end();
@@ -46,10 +45,19 @@ Configuration::Configuration(std::vector<std::string> vecteur)
     {
         std::string line = *begin;
         std::vector<std::string> token = Tokenization(line);
+        if (token.empty())
+        {
+            // Skip empty lines.
+            ++begin;
+            continue;
+        }
         if (token[0] == "host" && token.size() == 2)
         {
             ++begin;
-            InitHost(token[1]);
+            if (begin != end && token.size() == 2)
+                InitHost(token[1]);
+            else
+                throw std::string("Invalid host arguments");
         }
         else if (token[0] == "autoindex")
         {
@@ -57,7 +65,7 @@ Configuration::Configuration(std::vector<std::string> vecteur)
             if (begin != end && token.size() == 2)
                 InitAutoIndex(token[1]);
             else
-                throw std::string("Invalid autoindex");
+                throw std::string("Invalid autoindex arguments");
         }
         else if (token[0] == "index")
         {
@@ -65,7 +73,7 @@ Configuration::Configuration(std::vector<std::string> vecteur)
             if (begin != end && token.size() == 2)
                 InitIndex(token[1]);
             else
-                throw std::string("Invalid Index");
+                throw std::string("Invalid Index arguments");
         }
         else if (token[0] == "client_body_size")
         {
@@ -73,7 +81,7 @@ Configuration::Configuration(std::vector<std::string> vecteur)
             if (begin != end && token.size() == 2)
                 InitClientBodySize(token[1]);
             else
-                throw std::string("Invalid Client body size");
+                throw std::string("Invalid Client body size arguments");
         }
         else if (token[0] == "root")
         {
@@ -81,7 +89,7 @@ Configuration::Configuration(std::vector<std::string> vecteur)
             if (begin != end && token.size() == 2)
                 InitRoot(token[1]);
             else
-                throw std::string("Invalid root");
+                throw std::string("Invalid root arguments");
         }
         else if (token[0] == "listen")
         {
@@ -89,7 +97,7 @@ Configuration::Configuration(std::vector<std::string> vecteur)
             if (isStringAllDigits(token[1]) && token.size() == 2 && atoi(token[1].c_str()) <= 65635)
                 InitPort(token[1]);
             else
-                throw std::string("Invalid port number");
+                throw std::string("Invalid port number arguments");
         }
         else if (token[0] == "server_name")
         {
@@ -97,7 +105,7 @@ Configuration::Configuration(std::vector<std::string> vecteur)
             if (token.size() == 2)
                 InitServerName(token[1]);
             else
-                throw std::string("Invalid server name"); //! error
+                throw std::string("Invalid server name arguments");
         }
         else if (token[0] == "upload_path")
         {
@@ -106,7 +114,16 @@ Configuration::Configuration(std::vector<std::string> vecteur)
             if (token.size() == 2 && begin != end)
                 InitUpload(token[1]);
             else
-                throw std::string("Invalid Upload path");
+                throw std::string("Invalid Upload path arguments");
+        }
+        else if (token[0] == "cgi")
+        {
+            // Extract and set CGI settings
+            ++begin;
+            if (token.size() == 3 && begin != end)
+                InitCgi(token[1], token[2]);
+            else
+                throw std::string("Invalid cgi arguments");
         }
         else if (token[0] == "error_page")
         {
@@ -114,32 +131,110 @@ Configuration::Configuration(std::vector<std::string> vecteur)
             if (token.size() == 3)
                 InitErrorPage(token[1], token[2]);
             else
-                throw std::string("Invalid error page arguments"); // ! error
+                throw std::string("Invalid error page arguments");
         }
         else if (token[0] == "location")
         {
-            ++begin;
+            ++begin; // ! ach andir hnaya ...
             if (begin != end && token.size() == 2)
             {
                 // Find the closing curly brace of the location block.
-                TokenVectsIter endIt = std::find(begin, end, "}");
+                TokenVectsIter endIt = std::find(begin, end, "	}");
+                if (endIt != end)
+                {
                 // Create a Location object and add it to the vector.
-                Location location(token[1], begin, endIt);
-                _locations.push_back(location);
-                // Move the iterator to the next position after the location block.
-                begin = endIt;
+                    Location location(token[1], begin, endIt);
+                    _locations.push_back(location); // ! 3lach makitzadch size of locations ? makitkhchawch kamlin ?? 
+                    // Move the iterator to the next position after the location block.
+                    begin = endIt + 1; // Advance by 1 to skip the closing brace.
+                }
+                else
+                    throw std::string("Invalid location: Missing closing '}'");
             }
             else
-                throw std::string("Invalid location !"); //!error
+                throw std::string("Invalid location: Missing location block");
         }
         else
-            ++begin;
+            begin++;
     }
+    if (getRoot().empty())
+		InitRoot("/");
+	if (getHost().empty())
+		InitHost("localhost;");
+	if (getIndex().empty())
+		InitIndex("index.html;"); // ! remove ; ?
+    if (checkLocations())
+        throw std::string("Location is duplicated");
+    if (!getPort())
+		throw std::string("Port not found"); // ! throw exception wla n3mro b 80
+    // std::vector<int> it = getCodes();
+    // std::map<int, std::string> pages = getErrorPages();
+    // for (std::vector<int>::iterator it2 = it.begin(); it2 != it.end(); it2++)
+    // {
+    //     if (getTypePath(pages[*it2]) != 2)
+    //     {
+    // 	    if (getTypePath(this->_root + pages[*it2]) != 1)
+    // 	    	throw std::string ("Incorrect path for error page file: " + this->_root + pages[*it2]);
+    // 	    if (checkFile(this->_root + pages[*it2], 0) == -1 || checkFile(this->_root + pages[*it2], 4) == -1)
+    // 	    	throw std::string ("Error page file :" + this->_root + pages[*it2] + " is not accessible");
+    //     }
+    // } // ! to be fixed !! 
+} //ila kant / katdir getcwd
+
+std::vector<int>    Configuration::getCodes() const
+{
+    return _codes;
+}
+
+/* define is path is file(1), folder(2) or something else(3) */
+int Configuration::getTypePath(std::string const path)
+{
+    // The stat structure is used to store information about a file, such as its size, permissions, and other attributes.
+	struct stat	buffer;
+	int			result;
+	
+	result = stat(path.c_str(), &buffer);
+	if (result == 0)
+	{
+		if (S_ISREG(buffer.st_mode))
+			return (1); // : This condition checks if the file is a regular file (a file that is not a directory or a special file). If true, it returns 1 to indicate that the path points to a regular file.
+		else if (S_ISDIR(buffer.st_mode))
+			return (2); // This condition checks if the file is a directory. If true, it returns 2 to indicate that the path points to a directory.
+		else
+			return (3); // If none of the above conditions match, it returns 3 to indicate that the path points to some other type of file.
+	}
+	else
+		return (-1); // for error
+}
+
+/* checks is the file exists and accessable */
+int	Configuration::checkFile(std::string const path, int mode)
+{
+	return (access(path.c_str(), mode));
+}
+
+/* check location for a dublicate */
+bool Configuration::checkLocations() const
+{
+    std::vector<Location> locations = getLocations();
+	std::vector<Location>::iterator it1;
+	if (locations.size() < 2)
+		return (false);
+	std::vector<Location>::iterator it2;
+	for (it1 = locations.begin(); it1 != locations.end() - 1; it1++)
+    {
+		for (it2 = it1 + 1; it2 != locations.end(); it2++)
+        {
+			if (it1->getpattern() == it2->getpattern())
+				return (true);
+		}
+	}
+	return (false);
 }
 
 Configuration::Configuration(const Configuration& other)
     : _root(other._root), _host(other._host), _index(other._index),
-      _error_pages(other._error_pages), _client_max_body_size(other._client_max_body_size),
+      _error_pages(other._error_pages), _codes(other._codes), _client_max_body_size(other._client_max_body_size),
       _AutoIndex(other._AutoIndex), _root_exists(other._root_exists), _port(other._port),
       _host_exists(other._host_exists), _port_exists(other._port_exists),
       _server_name(other._server_name), _locations(other._locations) {}
@@ -148,22 +243,43 @@ Configuration& Configuration::operator=(const Configuration& other)
 {
     if (this != &other)
     {
-        _host = other._host;
-        _port = other._port;
-        _host_exists = other._host_exists;
-        _port_exists = other._port_exists;
-        _server_name = other._server_name;
-        _locations = other._locations;
         _root = other._root;
+        _host = other._host;
         _index = other._index;
         _error_pages = other._error_pages;
+        _codes = other._codes;
+        _cgi = other._cgi;
         _client_max_body_size = other._client_max_body_size;
         _AutoIndex = other._AutoIndex;
         _root_exists = other._root_exists;
+        _port = other._port;
+        _host_exists = other._host_exists;
+        _port_exists = other._port_exists;
+        _upload = other._upload;
+        _server_name = other._server_name;
+        _locations = other._locations;
     }
     return *this;
 }
 
+std::map<std::string, std::string>  Configuration::getCgi() const
+{
+    return _cgi;
+}
+void Configuration::InitCgi(std::string path, std::string lang)
+{
+    if (!lang.empty() && !path.empty())
+    {
+        // Store the CGI setting in the _cgi map.
+        _cgi[lang] = path;
+    }
+    else
+    {
+        // Handle parsing error if needed.
+        std::string str = "Error parsing CGI setting: " + path + " ";
+        throw std::string(str.append(lang));
+    }
+}
 void Configuration::InitHost(std::string value)
 {
     _host = value;
@@ -172,7 +288,7 @@ void Configuration::InitHost(std::string value)
 
 void Configuration::InitPort(std::string value)
 {
-    _port = value;
+    _port = atoi(value.c_str());
     _port_exists = true;
 }
 
@@ -197,11 +313,11 @@ void Configuration::InitErrorPage(std::string code, std::string path)
     // Implement this method to initialize error pages.
     // You would need to parse and store error pages based on your needs.
     int error_code = atoi(code.c_str());
-    std::string error_page_path = path;
     if ((error_code >= 100 && error_code <= 599) && !path.empty())
     {
         // Store the parsed values in the _error_pages map
-        _error_pages[error_code] = error_page_path;
+        _error_pages[error_code] = path;
+        _codes.push_back(error_code);
     }
     else
     {
@@ -297,7 +413,7 @@ std::string Configuration::getHost() const
     return _host;
 }
 
-std::string Configuration::getPort() const
+size_t Configuration::getPort() const
 {
     return _port;
 }

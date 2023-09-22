@@ -6,13 +6,13 @@
 /*   By: sben-ela <sben-ela@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/17 11:36:51 by sben-ela          #+#    #+#             */
-/*   Updated: 2023/09/21 21:45:45 by sben-ela         ###   ########.fr       */
+/*   Updated: 2023/09/22 17:48:11 by sben-ela         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "Response.hpp"
-
-
+#include "../Webserv.hpp"
+#include "../Includes/Configuration.hpp"
+#include "../Includes/Client.hpp"
 #define FILESIZE 10
 #define EXFIALE 13 
 
@@ -61,12 +61,12 @@ void    Get(const Client &client)
 
 
     std::string outfile = GenerateFile();
-    if (client.GetFileExtention() == ".php" || client.GetFileExtention() == ".py")
+    if (client.response.GetFileExtention() == ".php" || client.response.GetFileExtention() == ".py")
     {
         std::map<std::string, char*> intrepreter;
         intrepreter[".php"] = (char *)"/usr/bin/php-cgi";
         intrepreter[".py"] = (char*)"/usr/bin/python3";
-        char *Path[3] = {intrepreter[client.GetFileExtention()], (char *)client.GetPath().c_str(), NULL};
+        char *Path[3] = {intrepreter[client.response.GetFileExtention()], (char *)client.response.getPath().c_str(), NULL};
         int pid  = fork();
         if (!pid)
         {
@@ -74,27 +74,28 @@ void    Get(const Client &client)
             if (fd < 0)
                 throw(std::runtime_error("Open Failed"));
             dup2(fd, 1);
-            close(fd);
+            close(fd); // ! env itzad
             execve(Path[0], Path, 0);
             std::cout << "ERRRRORRR" << std::endl;
             exit(EXFIALE);
         }
         waitpid(pid, 0, 0);
-        fd = open (outfile.c_str(), O_RDWR);
+        fd = open ("/nfs/homes/sben-ela/Desktop/test/Response/shop/image.png", O_RDWR);
         if (fd < 0)
             throw(std::runtime_error("Open Failed"));
     }
     else
     {
-        fd = open (client.GetPath().c_str(), O_RDONLY);
+        
+        fd = open ("/nfs/homes/sben-ela/Desktop/test/Response/shop/image.png", O_RDONLY);
         if (fd < 0)
             throw(std::runtime_error("Open Failed"));
     }
     fstat(fd, &statbuffer);
     ss << statbuffer.st_size;
     // std::cout << "out size " << ss.str() << std::endl;
-    header = client.GetHttpVersion() + " 200 OK\r\nContent-Type: "
-    + client.GetConetType() + "\r\ncontent-length: " + ss.str() + "\r\n\r\n";
+    header = client.response.getHttpVersion() + " 200 OK\r\nContent-Type: "
+    + client.response.getContentType() + "\r\ncontent-length: " + ss.str() + "\r\n\r\n";
 
     send(client.GetSocketId(), header.c_str(), header.size(), 0);
     while (read(fd, buff, BUFFER_SIZE) > 0)
@@ -105,14 +106,24 @@ void    Get(const Client &client)
 }
 
 
-
-
-void    ft_Response(const Client &client, const Servers &servers)
+void    ft_Response(const Client &client)
 {
-    const std::vector<Configuration>   _servers = servers.getServers();
-
-    _servers[0].
+    try
+    {
+    std::cout << client.response.getPath() << std::endl;
+    // exit(0);
+    Get(client);
+    }
+    catch(std::exception &e)
+    {
+        std::cout << e.what() << "    Ayoub dzebii " << std::endl;
+    }
 }
+
+// int main()
+// {
+//     std::cout << "helll oworld" << std::endl;
+// }
 
 // #include <iostream>
 // #include <sys/socket.h>
@@ -157,7 +168,7 @@ void    ft_Response(const Client &client, const Servers &servers)
 //     }
 //     try
 //     {
-//         ft_Response(Client("GET" , "gif.gif", ".gif",  "image/gif", "HTTP/1.1 ", new_socket));
+//         ft_Response(Client("GET" , "test.py", ".py",  "text/plain", "HTTP/1.1 ", new_socket));
 //     }
 //     catch(std::exception &e){
 //         std::cout << "Error : " << e.what() << std::endl;

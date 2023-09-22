@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Location.hpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: aybiouss <aybiouss@student.42.fr>          +#+  +:+       +#+        */
+/*   By: aybiouss <aybiouss@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/05 09:22:08 by aybiouss          #+#    #+#             */
-/*   Updated: 2023/09/14 17:22:46 by aybiouss         ###   ########.fr       */
+/*   Updated: 2023/09/19 17:14:34 by aybiouss         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,20 +18,18 @@ typedef std::vector<std::string>::iterator TokenVectsIter;
 
 class Location
 {
-    public:
-        typedef void (Location::*methods)(std::string);
     private:
-        std::string                        _pattern;//
-        std::map<int, std::string>         _error_pages;//
-        std::vector<std::string>           _limit_except;//
-        std::string                        _index;//
-        std::map<std::string, std::string> _cgi;//
-        std::string                        _upload;//
-        std::string                        _redirect;//
-        std::string                        _root;//
-        size_t                             _client_max_body_size;//
+        std::string                        _pattern;
+        std::map<int, std::string>         _error_pages;
+        std::vector<std::string>           _limit_except;
+        std::string                        _index;
+        std::map<std::string, std::string> _cgi;
+        std::string                        _upload;
+        std::string                        _redirect;
+        std::string                        _root;
+        size_t                             _client_max_body_size;
         bool                               _AutoIndex;
-        bool                               _root_exists;//
+        bool                               _root_exists;
         bool                               _pattern_exists;
     public:
         Location();

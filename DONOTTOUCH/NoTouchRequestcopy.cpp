@@ -1,12 +1,12 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   Request.cpp                                        :+:      :+:    :+:   */
+/*   NoTouchRequestcopy.cpp                             :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: aybiouss <aybiouss@student.42.fr>          +#+  +:+       +#+        */
+/*   By: aybiouss <aybiouss@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/05 09:27:53 by aybiouss          #+#    #+#             */
-/*   Updated: 2023/09/07 11:52:51 by aybiouss         ###   ########.fr       */
+/*   Updated: 2023/09/19 10:10:30 by aybiouss         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -47,6 +47,32 @@ void Request::parseHttpRequest(const std::string& requestBuffer, int new_socket)
             headerValue.erase(headerValue.find_last_not_of(" \t") + 1);
             _header[headerName] = headerValue;
         }
+        if ( _request_headers.count("transfer-encoding"))
+        {
+            if (_request_headers["transfer-encoding"].find_first_of("chunked") != std::string::npos)
+                _chunked_flag = true;
+            _body_flag = true;
+        } //  ! tgad
+        if (_request_headers.count("content-type") && _request_headers["content-type"].find("multipart/form-data") != std::string::npos)
+        {
+            size_t pos = _request_headers["content-type"].find("boundary=", 0);
+            if (pos != std::string::npos)
+                this->_boundary = _request_headers["content-type"].substr(pos + 9, _request_headers["content-type"].size());
+            this->_multiform_flag = true;
+        } // ! search and correct this
+    }
+    if (_body_flag == 1)
+    {
+        if (_chunked_flag == true)
+            _state = Chunked_Length_Begin;
+        else
+        {
+            _state = Message_Body;
+        }
+    }
+    else
+    {
+        _state = Parsing_Done;
     }
     // std::cout << "********************************" << std::endl;
     // std::cout << forBody << std::endl;

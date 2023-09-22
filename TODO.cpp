@@ -58,3 +58,17 @@ Implement security best practices, including input validation, protection agains
 Remember that the specific steps and requirements may vary depending on your project's goals and technology stack. Building a web server is a complex task, and continuous development, testing, and maintenance are essential for a robust and reliable system.
 
 */
+
+
+/**
+ * Runs main loop that goes through all file descriptors from 0 till the biggest fd in the set.
+ * - check file descriptors returend from select():
+ *      if server fd --> accept new client
+ *      if client fd in read_set --> read message from client
+ *      if client fd in write_set:
+ *          1- If it's a CGI response and Body still not sent to CGI child process --> Send request body to CGI child process.
+ *          2- If it's a CGI response and Body was sent to CGI child process --> Read outupt from CGI child process.
+ *          3- If it's a normal response --> Send response to client.
+ * - servers and clients sockets will be added to _recv_set_pool initially,
+ *   after that, when a request is fully parsed, socket will be moved to _write_set_pool
+ */

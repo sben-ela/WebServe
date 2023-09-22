@@ -6,21 +6,22 @@
 /*   By: sben-ela <sben-ela@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/04 12:25:03 by aybiouss          #+#    #+#             */
-/*   Updated: 2023/09/21 19:35:42 by sben-ela         ###   ########.fr       */
+/*   Updated: 2023/09/22 17:46:12 by sben-ela         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #pragma once
 
-#define PORT 8081 // Where the clients can reach at
+#define PORT 8080 // Where the clients can reach at
 #define MAX_CLIENTS 10 // Maximum number of clients to handle
-
+#include <csignal>
 #include <vector>
 #include <stdio.h>
 #include <stdlib.h>
 #include <fstream>
 #include <map>
 #include <sstream>
+#include <netdb.h>
 // #include "./Includes/Location.hpp"
 // #include "./Includes/Socket.hpp"
 // #include "./Includes/Configuration.hpp"
@@ -51,16 +52,13 @@
 #include <string>        // For string manipulation
 #include <exception>
 #include <climits>
-#include <map> // map
-#include <cstdlib> // rand
 #include <sys/types.h>
 #include <sys/wait.h>
-#include <sys/stat.h> // stat 
-#include <sys/sysmacros.h>
-#include "Response/Client.hpp"
-#include "Response/Response.hpp"
-#include "Includes/Servers.hpp"
-#include "Includes/Socket.hpp"
-#include "Includes/Request.hpp"
-#include "Includes/Servers.hpp"
+// #include "Response/Response.hpp"
+#define BUFFER_SIZE 1024
+class Client;
+
+void    ft_Response(const Client &client);
+
 typedef std::vector<std::string>::iterator TokenVectsIter;
+void sigintHandler(int signal);

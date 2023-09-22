@@ -3,19 +3,20 @@
 /*                                                        :::      ::::::::   */
 /*   Response.hpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: sben-ela <sben-ela@student.42.fr>          +#+  +:+       +#+        */
+/*   By: aybiouss <aybiouss@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2023/09/16 13:59:09 by sben-ela          #+#    #+#             */
-/*   Updated: 2023/09/21 20:39:00 by sben-ela         ###   ########.fr       */
+/*   Created: 2023/09/04 17:34:48 by aybiouss          #+#    #+#             */
+/*   Updated: 2023/09/14 15:58:09 by aybiouss         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #pragma once
 
-#include "../Webserv.hpp"
-#include "../Includes/Configuration.hpp"
-#define BUFFER_SIZE 1024
+#include "Request.hpp"
 
-void    ft_Response(const Client &client, const Servers &servers);
-
-
+class Response : public Request
+{
+    public:
+        void    Function();
+        const char* get_content_type(const char* path);
+};

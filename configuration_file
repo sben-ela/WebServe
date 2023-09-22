@@ -36,7 +36,7 @@ server
 	location 	/shop
 	{
 		allow_methods GET
-		root ./www/shop-website/
+		root /nfs/homes/sben-ela/Desktop/test/Response
 		index index.html
 	}
 }
@@ -45,7 +45,7 @@ server
 {
 	listen 		8080
 	server_name 	google.com
-	location 	/website1
+	location 	/image
 	{
 		allow_methods GET POST
 		root ./www/shop-website/

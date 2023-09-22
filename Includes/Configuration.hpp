@@ -6,7 +6,7 @@
 /*   By: aybiouss <aybiouss@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/05 09:22:39 by aybiouss          #+#    #+#             */
-/*   Updated: 2023/09/14 17:25:17 by aybiouss         ###   ########.fr       */
+/*   Updated: 2023/09/21 13:31:08 by aybiouss         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,22 +19,23 @@ typedef std::vector<std::string>::iterator TokenVectsIter;
 
 class Configuration
 {
-    public:
-        typedef void (Configuration::*methods)(std::string);
     private:
         std::string                                      _root;
         std::string                                      _host;
         std::string                                      _index;
         std::map<int, std::string>                       _error_pages;
+        std::vector<int>                                 _codes;
+        std::map<std::string, std::string>               _cgi;
         size_t                                           _client_max_body_size;
         bool                                             _AutoIndex;
         bool                                             _root_exists;
-        std::string                                      _port;
+        size_t                                           _port;
         bool                                             _host_exists;
         bool                                             _port_exists;
         std::string                                      _upload;
         std::string                                      _server_name;                                   
         std::vector<Location>                            _locations;
+        
     public:
         Configuration();
         // Configuration operator()(std::string host, std::string  port);
@@ -52,17 +53,23 @@ class Configuration
         void                         InitClientBodySize(std::string value);
         void                         InitAutoIndex(std::string value);
         void                         InitUpload(std::string value);
+        std::map<std::string, std::string>  getCgi() const;
+        void                                InitCgi(std::string path, std::string lang);
         std::string                  getUpload() const;
         std::string                  getRoot() const;
         std::string                  getIndex() const;
         std::map<int, std::string>   getErrorPages() const;
+        std::vector<int>             getCodes() const;
         size_t                       getClientMaxBodySize() const;
         bool                         getAutoIndex() const;
         // static    void check_dup(std::string host, std::string port);
         std::string                 getHost() const;
-        std::string                 getPort() const;
+        size_t                      getPort() const;
         std::string                 getServerNames() const;
         std::vector<Location>       getLocations() const;
+        bool                        checkLocations() const;
+        int	                        checkFile(std::string const path, int mode);
+        int                         getTypePath(std::string const path);
         friend std::ostream& operator<<(std::ostream& o, Configuration obj);
         ~Configuration();
 };

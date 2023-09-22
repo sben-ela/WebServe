@@ -3,27 +3,29 @@
 /*                                                        :::      ::::::::   */
 /*   Servers.hpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: sben-ela <sben-ela@student.42.fr>          +#+  +:+       +#+        */
+/*   By: aybiouss <aybiouss@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/13 14:54:36 by aybiouss          #+#    #+#             */
-/*   Updated: 2023/09/21 20:45:20 by sben-ela         ###   ########.fr       */
+/*   Updated: 2023/09/22 14:39:29 by aybiouss         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #pragma once
 
 #include "Configuration.hpp"
+#include "Socket.hpp"
+#include "Client.hpp"
 
 class Servers
 {
     private:
         std::vector<Configuration>   _servers;
+        std::vector<Client>          _client;
     public:
         Servers() {};
         int    ConfigFileParse(std::string file);
-        const std::vector<Configuration>  &getServers( void ) const {
-            return (_servers);
-        }
         void printServerData() const;
+        int AllServers();
+        void checkServers();
         ~Servers() {};
 };

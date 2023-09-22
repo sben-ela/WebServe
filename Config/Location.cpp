@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Location.cpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: sben-ela <sben-ela@student.42.fr>          +#+  +:+       +#+        */
+/*   By: aybiouss <aybiouss@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/05 09:26:06 by aybiouss          #+#    #+#             */
-/*   Updated: 2023/09/17 12:05:57 by sben-ela         ###   ########.fr       */
+/*   Updated: 2023/09/22 13:40:11 by aybiouss         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -96,7 +96,7 @@ Location::Location(std::string path, TokenVectsIter& begin, TokenVectsIter& end)
             if (begin != end && token.size() == 2)
                 InitUpload(token[1]);
             else
-                throw std::string("Invalid upload path");
+                throw std::string("Invalid upload_path arguments");
         }
         else if (token[0] == "error_page")
         {
@@ -110,10 +110,10 @@ Location::Location(std::string path, TokenVectsIter& begin, TokenVectsIter& end)
         {
             // Extract and set redirect
             ++begin;
-            if (begin != end)
-            {
+            if (begin != end && token.size() == 2)
                 InitRedirect(token[1]);
-            }
+            else
+                throw std::string("Invalid redirect arguments");
         }
         // Handle other tokens as needed
         ++begin;
@@ -132,10 +132,16 @@ Location& Location::operator=(const Location& other)
     if (this != &other)
     {
         _pattern = other._pattern;
+        _error_pages = other._error_pages;
         _limit_except = other._limit_except;
+        _index = other._index;
         _cgi = other._cgi;
         _upload = other._upload;
         _redirect = other._redirect;
+        _root = other._root;
+        _client_max_body_size = other._client_max_body_size;
+        _AutoIndex = other._AutoIndex;
+        _root_exists = other._root_exists;
         _pattern_exists = other._pattern_exists;
     }
     return *this;

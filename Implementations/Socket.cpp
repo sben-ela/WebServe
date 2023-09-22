@@ -6,12 +6,12 @@
 /*   By: sben-ela <sben-ela@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/04 17:12:03 by aybiouss          #+#    #+#             */
-/*   Updated: 2023/09/21 19:33:07 by sben-ela         ###   ########.fr       */
+/*   Updated: 2023/09/22 17:14:25 by sben-ela         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../Includes/Socket.hpp"
-
+#include "../Includes/Response.hpp"
 
 void Socket::setnonblocking(int *sock)
 {
@@ -116,15 +116,12 @@ int Socket::function() {
                 // std::cout << request.getMethod()<< std::endl;
                 // std::cout << request.getPath() << std::endl;
                 // std::cout << request.getHttpVersion() << std::endl;
-                printf("%s\n", buffer);
                 const char *hello = "HTTP/1.1 200 OK\nContent-Type: text/plain\nContent-Length: 12\n\nHello world!";
                 write(sd, hello, strlen(hello));
                 close(sd);
                 // std::cout << response.getResponseStatus() << std::endl;
                 std::cout << "--------------------" << std::endl;
-                // response.Function();
-                std::cout << response.getPath() << std::endl;
-                ft_Response(Client(response.getMethod() , response.getPath(), response.getPath().substr(response.getPath().find('.')), "text/plain",response.getHttpVersion(), sd));
+                response.Function();
                 std::cout << "--------------------" << std::endl;
                 client_socket[i] = 0;
             }
@@ -138,3 +135,5 @@ int Socket::function() {
 //page 215 !!! chapter 7
 
 // https://www.ibm.com/docs/en/i/7.2?topic=designs-example-nonblocking-io-select
+
+
