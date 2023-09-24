@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Location.hpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: aybiouss <aybiouss@student.1337.ma>        +#+  +:+       +#+        */
+/*   By: sben-ela <sben-ela@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/05 09:22:08 by aybiouss          #+#    #+#             */
-/*   Updated: 2023/09/19 17:14:34 by aybiouss         ###   ########.fr       */
+/*   Updated: 2023/09/24 14:39:41 by sben-ela         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -39,22 +39,22 @@ class Location
         std::vector<std::string>            Tokenizations(std::string line);
         void                                InitClientBodySize(std::string value);
         void                                InitAutoIndex(std::string value);
-        void                                InitIndex(std::string value);
+        void                                InitIndex(std::string& value);
         void                                InitRoot(std::string value);
-        void                                InitErrorPage(std::string code, std::string path);
+        void                                InitErrorPage(std::string& code, std::string& path);
         void                                InitPattern(std::string value);
         void                                InitLimitExcept(std::string value);
         void                                InitCgi(std::string path, std::string lang);
         void                                InitUpload(std::string value);
         void                                InitRedirect(std::string value);
-        std::string                         getpattern() const;
-        std::string                         getIndex() const;
+        const std::string&                         getpattern() const;
+        const std::string&                         getIndex() const;
         std::map<int, std::string>          getErrorPages() const;
         std::vector<std::string>            getLimit_except() const;
         std::map<std::string, std::string>  getCgi() const;
-        std::string                         getUpload() const;
-        std::string                         getRedirect() const;
-        std::string                         getRoot() const;
+        const std::string&                         getUpload() const;
+        const std::string&                         getRedirect() const;
+        const std::string&                         getRoot() const;
         size_t                              getClientMaxBodySize() const;
         bool                                getAutoIndex() const;
         ~Location();

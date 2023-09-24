@@ -6,7 +6,7 @@
 /*   By: sben-ela <sben-ela@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/04 12:25:03 by aybiouss          #+#    #+#             */
-/*   Updated: 2023/09/22 17:46:12 by sben-ela         ###   ########.fr       */
+/*   Updated: 2023/09/23 14:03:55 by sben-ela         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -58,7 +58,7 @@
 #define BUFFER_SIZE 1024
 class Client;
 
-void    ft_Response(const Client &client);
+void    ft_Response(Client &client);
 
 typedef std::vector<std::string>::iterator TokenVectsIter;
 void sigintHandler(int signal);

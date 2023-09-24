@@ -6,7 +6,7 @@
 /*   By: sben-ela <sben-ela@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/17 11:36:51 by sben-ela          #+#    #+#             */
-/*   Updated: 2023/09/23 00:51:54 by sben-ela         ###   ########.fr       */
+/*   Updated: 2023/09/24 15:03:24 by sben-ela         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -65,6 +65,57 @@ size_t getLocationIndex(const Client& client)
 	return(0);
 }
 
+#include <iostream>
+#include <fstream>
+#include <string>
+#include <ctime>
+#include <sys/stat.h>
+#include <dirent.h>
+#include <iostream>
+#include <string>
+
+std::string GenerateDirectoryListing(const std::string& directoryPath) {
+    std::string html;
+    html += "<html><head><title>Directory Listing</title></head><body>";
+    html += "<h1>Directory Listing</h1>";
+    html += "<table border='1'><tr><th>Name</th><th>Size</th><th>Date Modified</th></tr>";
+    std::stringstream ss;
+    
+    // Open the directory
+    DIR* dir = opendir(directoryPath.c_str());
+    if (dir) {
+        struct dirent* entry;
+        while ((entry = readdir(dir))) {
+            if (std::string(entry->d_name) != "." && std::string(entry->d_name) != "..") {
+                // Get file information
+                std::string filePath = directoryPath + "/" + entry->d_name;
+                struct stat fileStat;
+                if (stat(filePath.c_str(), &fileStat) == 0) {
+                    // Format file size
+                    std::string fileSize;
+                    if (S_ISDIR(fileStat.st_mode)) {
+                        fileSize = "Directory";
+                    } else {
+                        ss >> fileStat.st_size;
+                        fileSize = ss.str() + " bytes";
+                    }
+
+                    // Format date modified
+                    char dateModified[100];
+                    strftime(dateModified, sizeof(dateModified), "%D, %r", localtime(&fileStat.st_mtime));
+
+                    // Add row to the table
+                    html += "<tr><td><a href='" + std::string(entry->d_name) + "'>" + entry->d_name + "</a></td><td>" + fileSize + "</td><td>" + dateModified + "</td></tr>";
+                }
+            }
+        }
+        closedir(dir);
+    }
+
+    html += "</table></body></html>";
+    return html;
+}
+
 std::string getFileName(const std::string& path, size_t first)
 {
     std::string fileName = path.substr(first);
@@ -85,6 +136,25 @@ std::string  getFilePath(const Client& client)
 	return (filePath);
 }
 
+void	SendErrorPage(Client client, int errorNumber)
+{
+    std::stringstream ss;
+    struct stat statbuffer;
+    char buff[BUFFER_SIZE];
+
+    std::cout << client.getServer().getErrorPages()[errorNumber].c_str() << std::endl;
+    int efd = open(client.getServer().getErrorPages()[errorNumber].c_str(), O_RDONLY);
+    if (efd < 0)
+        throw(std::runtime_error("open Failed in SendErrorPage !"));
+    fstat(efd, &statbuffer);
+    ss << statbuffer.st_size; /// ! 200 ok khas tbdel bl error
+    std::string header = client.response.getHttpVersion() + "200 ok" + "\r\ncontent-length: " + ss.str() + "\r\n\r\n";
+    write(client.GetSocketId(), header.c_str(), header.size());
+    int rd = read(efd, buff, BUFFER_SIZE);
+    buff[rd] = '\0';
+    write(client.GetSocketId(), buff, BUFFER_SIZE);
+}
+
 void    Get(const Client &client)
 {
     char buff[BUFFER_SIZE];
@@ -92,7 +162,6 @@ void    Get(const Client &client)
     std::stringstream ss;
     struct stat statbuffer;
     int fd;
-
 
     // std::cout << getFilePath(client).c_str() << std::endl;;
     if (client.response.GetFileExtention() == ".php" || client.response.GetFileExtention() == ".py")
@@ -131,10 +200,9 @@ void    Get(const Client &client)
     }
     fstat(fd, &statbuffer);
     ss << statbuffer.st_size;
-    // std::cout << "out size " << ss.str() << std::endl;
     header = client.response.getHttpVersion() + " 200 OK\r\nContent-Type: "
     + client.response.getContentType() + "\r\ncontent-length: " + ss.str() + "\r\n\r\n";
-    std::cout << header << std::endl;
+
     send(client.GetSocketId(), header.c_str(), header.size(), 0);
     while (read(fd, buff, BUFFER_SIZE) > 0)
         if (write (client.GetSocketId() , buff, BUFFER_SIZE) < 0)
@@ -143,14 +211,74 @@ void    Get(const Client &client)
     close (fd);
 }
 
+bool isDirectory(const char* path) {
+    struct stat fileInfo;
+    
+    if (stat(path, &fileInfo) != 0)
+        throw(std::runtime_error("stat failed in isDirectory"));
 
-void    ft_Response(const Client &client)
+    std::cout << "Path : " << path << std::endl;
+    return S_ISDIR(fileInfo.st_mode);
+}
+
+void    DirectoryHasIndexFile(Client client, const std::string& indexFile)
+{
+    client.response.setPAth(client.response.getPath() + indexFile);
+    std::cout << "New Path : " << client.response.getPath() << std::endl;; 
+    Get(client);
+}
+
+void    handleDirectory(Client &client, const std::string& filePath)
+{
+    size_t locationIndex = getLocationIndex(client);
+    std::cout << "locationIndex : " << locationIndex << std::endl;
+    if (filePath[filePath.size() - 1] != '/')
+        SendErrorPage(client, 403); // ! must be 301
+    else
+    {
+        std::cout << " indexFile :" << client.getServer().getLocations()[locationIndex].getIndex() << ":" << std::endl;
+        if (client.getServer().getLocations()[locationIndex].getIndex().empty() && client.getServer().getIndex().empty())
+        {
+            if (client.getServer().getLocations()[locationIndex].getAutoIndex())
+            {
+                std::stringstream ss;
+                std::string test = GenerateDirectoryListing("/nfs/homes/sben-ela/WebServe");
+                ss << test.size();
+                std::cout << test;
+                std::string header = client.response.getHttpVersion() + " 200 OK\r\nContent-Type: "
+                    + "text/html" + "\r\ncontent-length: " + ss.str() + "\r\n\r\n";
+                write(client.GetSocketId(), header.c_str(), header.size()); 
+                write(client.GetSocketId(), test.c_str(), test.size());
+            }
+            else
+                SendErrorPage(client, 403);
+        }
+        else if (!client.getServer().getLocations()[locationIndex].getIndex().empty()) // ! index khaso i3mer osf 
+            DirectoryHasIndexFile(client, client.getServer().getLocations()[locationIndex].getIndex());
+        else if (!client.getServer().getIndex().empty())
+            DirectoryHasIndexFile(client, client.getServer().getIndex());
+    }
+}
+
+void    ft_Response(Client &client)
 {
     try
     {
-        // std::cout << "FILE : " << getFilePath(client).c_str() << std::endl;
-        Get(client);
-        // exit(0);
+        std::string filePath = getFilePath(client).c_str();
+        std::cout << "File Path :: " << filePath << std::endl;
+        if (access(filePath.c_str(), F_OK))
+            SendErrorPage(client, 404);
+        else if (access(filePath.c_str(), R_OK))
+            SendErrorPage(client, 403);
+        if (client.response.getMethod() == "GET")
+        {
+            if (isDirectory(filePath.c_str()))
+                handleDirectory(client, filePath);
+            else
+                Get(client);
+        }
+        // else if (client.response.getMethod() == "POST")
+        //     ;
     }
     catch(std::exception &e)
     {

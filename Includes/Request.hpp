@@ -6,7 +6,7 @@
 /*   By: sben-ela <sben-ela@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/04 17:07:10 by aybiouss          #+#    #+#             */
-/*   Updated: 2023/09/22 18:52:55 by sben-ela         ###   ########.fr       */
+/*   Updated: 2023/09/23 22:02:04 by sben-ela         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,7 +34,8 @@ class Request
         std::string         getHttpVersion() const;
         std::string         getResponseStatus() const;
         std::string         GetFileExtention( void ) const;
-        const std::string&  getContentType( void ) const;
+        std::string         getContentType( void ) const;
+        void                setPAth(std::string newPath);
         void                setResponseStatus(const std::string& status);
         int                 processChunk(const std::string& buffer); // int socket ?
         int                 parseRequest();

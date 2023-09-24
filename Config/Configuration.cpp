@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Configuration.cpp                                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: aybiouss <aybiouss@student.42.fr>          +#+  +:+       +#+        */
+/*   By: sben-ela <sben-ela@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/05 09:26:09 by aybiouss          #+#    #+#             */
-/*   Updated: 2023/09/22 13:38:30 by aybiouss         ###   ########.fr       */
+/*   Updated: 2023/09/24 14:32:05 by sben-ela         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -45,12 +45,12 @@ Configuration::Configuration(std::vector<std::string> vecteur)
     {
         std::string line = *begin;
         std::vector<std::string> token = Tokenization(line);
-        if (token.empty())
-        {
-            // Skip empty lines.
-            ++begin;
-            continue;
-        }
+        // if (token.empty())
+        // {
+        //     // Skip empty lines.
+        //     ++begin;
+        //     continue;
+        // }
         if (token[0] == "host" && token.size() == 2)
         {
             ++begin;
@@ -135,7 +135,7 @@ Configuration::Configuration(std::vector<std::string> vecteur)
         }
         else if (token[0] == "location")
         {
-            ++begin; // ! ach andir hnaya ...
+            ++begin;
             if (begin != end && token.size() == 2)
             {
                 // Find the closing curly brace of the location block.
@@ -144,7 +144,10 @@ Configuration::Configuration(std::vector<std::string> vecteur)
                 {
                 // Create a Location object and add it to the vector.
                     Location location(token[1], begin, endIt);
-                    _locations.push_back(location); // ! 3lach makitzadch size of locations ? makitkhchawch kamlin ?? 
+                    // std::cout << location << std::endl;
+                    // std::cout << "********************************" << std::endl;
+                    _locations.push_back(location);
+                    // ? hitax ma3amelx copy assignment
                     // Move the iterator to the next position after the location block.
                     begin = endIt + 1; // Advance by 1 to skip the closing brace.
                 }
@@ -157,16 +160,19 @@ Configuration::Configuration(std::vector<std::string> vecteur)
         else
             begin++;
     }
-    if (getRoot().empty())
-		InitRoot("/");
-	if (getHost().empty())
-		InitHost("localhost;");
-	if (getIndex().empty())
-		InitIndex("index.html;"); // ! remove ; ?
-    if (checkLocations())
-        throw std::string("Location is duplicated");
-    if (!getPort())
-		throw std::string("Port not found"); // ! throw exception wla n3mro b 80
+    // std::cout << "-----------------------" << std::endl;
+    // std::cout << _locations[0] << std::endl;
+    // if (getRoot().empty())
+	// 	InitRoot("/");
+	// if (getHost().empty())
+	// 	InitHost("localhost;");
+    //     // !!! nsitiha azbiiiii
+	// if (getIndex().empty())
+	// 	InitIndex("gbdughdfufd"); // ! remove ; ?
+    // if (checkLocations())
+    //     throw std::string("Location is duplicated");
+    // if (!getPort())
+	// 	throw std::string("Port not found"); // ! throw exception wla n3mro b 80
     // std::vector<int> it = getCodes();
     // std::map<int, std::string> pages = getErrorPages();
     // for (std::vector<int>::iterator it2 = it.begin(); it2 != it.end(); it2++)
@@ -435,12 +441,18 @@ std::ostream& operator<<(std::ostream& o, Configuration obj)
     o << "Host: " << obj.getHost() << std::endl;
     o << "Port: " << obj.getPort() << std::endl;
     o << "Server Name: " << obj.getServerNames() << std::endl;
-    
+    std::map<int, std::string> p = obj.getErrorPages();
+    for (std::map<int, std::string>::iterator it = p.begin(); it != p.end(); it++)
+    {
+        o << "Error pages: " << it->first << "  " << it->second << " " << std::endl;
+    }
+    o << std::endl;
     // Output location blocks
-    std::vector<Location> locations = obj.getLocations();
-    for (std::vector<Location>::const_iterator it = locations.begin(); it != locations.end(); ++it) {
+    std::vector<Location> loca = obj.getLocations();
+    for (std::vector<Location>::iterator it = loca.begin(); it != loca.end(); ++it) {
         std::cout << *it << std::endl;
     }
+    std::cout << "-----------------------------" << std::endl;
     return o;
 }
 // This code defines the Configuration class with member functions for initialization and access to its attributes. It also handles parsing location blocks and uses the Location class to store and manage them.

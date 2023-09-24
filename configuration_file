@@ -1,7 +1,7 @@
 server
 {
 	listen 	 8000
-	root /nfs/homes/aybiouss/Desktop/Webserv/
+	root /nfs/homes/aybiouss/Webserv
 	error_page 	404 Errors/404.html
 	error_page 	403 Errors/403.html
 	error_page 	405 Errors/405.html
@@ -10,18 +10,14 @@ server
 	cgi /usr/bin/python3 .py
 	location /
 	{
-		error_page 	404 Errors/404.html
-		error_page 	403 Errors/403.html
-		error_page 	406 Errors/406.html
-		allow_methods POST GET
-		root ./www/
 		autoindex on
+		root ./www/multimedia/
 	}
 	location 	/gym/bah/blah
 	{
 		allow_methods Post GET
 		root ./www/gym-website-template/
-		index index.html
+		index index9.html
 	}
 	location 	/media
 	{

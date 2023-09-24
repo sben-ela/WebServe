@@ -3,16 +3,28 @@
 /*                                                        :::      ::::::::   */
 /*   Location.cpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: aybiouss <aybiouss@student.42.fr>          +#+  +:+       +#+        */
+/*   By: sben-ela <sben-ela@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/05 09:26:06 by aybiouss          #+#    #+#             */
-/*   Updated: 2023/09/22 13:40:11 by aybiouss         ###   ########.fr       */
+/*   Updated: 2023/09/24 14:46:52 by sben-ela         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../Includes/Location.hpp"
 
-Location::Location() : _pattern_exists(false) {}
+Location::Location() : _pattern_exists(false) {
+    _pattern_exists = false;
+    _error_pages.clear();
+    _limit_except.clear();
+    _index.clear();
+    _cgi.clear();
+    _upload.clear();
+    _redirect.clear();
+    _root.clear();
+    _client_max_body_size = 0;
+    _AutoIndex = false;
+    _root_exists = false;
+}
 
 std::vector<std::string>    Location::Tokenizations(std::string line)
 {
@@ -26,7 +38,13 @@ std::vector<std::string>    Location::Tokenizations(std::string line)
     return result;
 }
 
-Location::Location(std::string path, TokenVectsIter& begin, TokenVectsIter& end) : _pattern_exists(false)
+Location::Location(std::string path, TokenVectsIter& begin, TokenVectsIter& end)
+    :   _upload(""),
+        _redirect(""),
+        _root(""),
+        _client_max_body_size(0),
+        _AutoIndex(false),
+        _root_exists(false)
 {
     // Initialize the Location object using the provided iterators (assuming they point to strings).
     if (!path.empty())
@@ -35,97 +53,106 @@ Location::Location(std::string path, TokenVectsIter& begin, TokenVectsIter& end)
     {
         std::string line = *begin;
         std::vector<std::string> token = Tokenizations(line);
-        if (token[0] == "limit_except")
+        if (token[0] == "allow_methods")
         {
             // Extract and set limit_except values
-            ++begin;
             size_t i = 1;
             if (begin == end)
-                throw std::string("Invalid limit_except");
+                throw std::string("Invalid allow_methods arguments");
             while (i < token.size())
             {
                 InitLimitExcept(token[i]);
                 i++;
-            }
+            } // ! ba9i aykhssni nsre3ha (BASFA)
+            ++begin;
         }
         else if (token[0] == "autoindex")
         {
-            ++begin;
             if (begin != end && token.size() == 2)
                 InitAutoIndex(token[1]);
             else
                 throw std::string("Invalid autoindex");
+            ++begin;
         }
         else if (token[0] == "client_body_size")
         {
-            ++begin;
             if (begin != end && token.size() == 2)
                 InitClientBodySize(token[1]);
             else
                 throw std::string("Invalid Client body size");
+            ++begin;
         }
         else if (token[0] == "root")
         {
-            ++begin;
             if (begin != end && token.size() == 2)
                 InitRoot(token[1]);
             else
                 throw std::string("Invalid root");
+            ++begin;
         }
         else if (token[0] == "index")
         {
-            ++begin;
             if (begin != end && token.size() == 2)
+            {
                 InitIndex(token[1]);
+            }
             else
-                throw std::string("Invalid Index");
+                throw std::string("Invalid Index " + token[0] + token[1]);
+            ++begin;
         }
         else if (token[0] == "cgi")
         {
             // Extract and set CGI settings
-            ++begin;
             if (token.size() == 3 && begin != end)
                 InitCgi(token[1], token[2]);
             else
                 throw std::string("Invalid cgi arguments");
+            ++begin;
         }
         else if (token[0] == "upload_path")
         {
             // Extract and set upload
-            ++begin;
             if (begin != end && token.size() == 2)
                 InitUpload(token[1]);
             else
                 throw std::string("Invalid upload_path arguments");
+            ++begin;
         }
         else if (token[0] == "error_page")
         {
-            ++begin;
             if (token.size() == 3)
                 InitErrorPage(token[1], token[2]);
             else
                 throw std::string("Invalid error page arguments");
+            ++begin;
         }
         else if (token[0] == "redirect")
         {
             // Extract and set redirect
-            ++begin;
             if (begin != end && token.size() == 2)
                 InitRedirect(token[1]);
             else
                 throw std::string("Invalid redirect arguments");
+            ++begin;
         }
+        else
+            ++begin;
         // Handle other tokens as needed
-        ++begin;
     }
+    // std::cout << "#############################33" << std::endl;
+    // std::cout << this->getRoot() << std::endl;
+    // std::cout << "#############################33" << std::endl;
+    // std::cout << *this << std::endl;
+    // std::cout << "#############################33" << std::endl;
 }
 
 Location::Location(const Location& other)
-    : _pattern(other._pattern),
-      _limit_except(other._limit_except),
+    : _pattern(other._pattern), _error_pages(other._error_pages),
+      _limit_except(other._limit_except), _index(other._index),
       _cgi(other._cgi), _upload(other._upload),
-      _redirect(other._redirect),
-      _pattern_exists(other._pattern_exists) {}
+      _redirect(other._redirect), _root(other._root),
+      _client_max_body_size(other._client_max_body_size), _AutoIndex(other._AutoIndex),
+      _root_exists(other._root_exists), _pattern_exists(other._pattern_exists) {}
 
 Location& Location::operator=(const Location& other)
 {
@@ -147,7 +174,7 @@ Location& Location::operator=(const Location& other)
     return *this;
 }
 
-void Location::InitIndex(std::string value)
+void Location::InitIndex(std::string& value)
 {
     _index = value;
 }
@@ -163,7 +190,7 @@ void Location::InitLimitExcept(std::string value)
     _limit_except.push_back(value);
 }
 
-void Location::InitErrorPage(std::string code, std::string path)
+void Location::InitErrorPage(std::string& code, std::string& path)
 {
     // Implement this method to initialize error pages.
     // You would need to parse and store error pages based on your needs.
@@ -259,12 +286,12 @@ void Location::InitRedirect(std::string value)
     _redirect = value;
 }
 
-std::string Location::getpattern() const
+const std::string& Location::getpattern() const
 {
     return _pattern;
 }
 
-std::string Location::getRoot() const
+const std::string& Location::getRoot() const
 {
     return _root;
 }
@@ -284,7 +311,7 @@ std::vector<std::string> Location::getLimit_except() const
     return _limit_except;
 }
 
-std::string Location::getIndex() const
+const std::string& Location::getIndex() const
 {
     return _index;
 }
@@ -299,12 +326,12 @@ std::map<int, std::string> Location::getErrorPages() const
     return _error_pages;
 }
 
-std::string Location::getUpload() const
+const std::string& Location::getUpload() const
 {
     return _upload;
 }
 
-std::string Location::getRedirect() const
+const std::string& Location::getRedirect() const
 {
     return _redirect;
 }
@@ -317,14 +344,19 @@ std::ostream& operator<<(std::ostream& o, Location obj)
 {
     o << "Pattern: " << obj._pattern << std::endl;
     o << "Uploads: " << obj.getUpload() << std::endl;
-    o << "Index: ";
-    for (size_t i = 0; i < obj.getIndex().size(); ++i)
+    o << "Index: " << obj.getIndex() << std::endl;
+    o << "Root : " << obj._root << std::endl;
+    o << "AutoIndex :" << obj.getAutoIndex() << std::endl;
+    std::map<int, std::string> p = obj.getErrorPages();
+    for (std::map<int, std::string>::iterator it = p.begin(); it != p.end(); it++)
     {
-        o << obj.getIndex()[i];
-        if (i < obj.getIndex().size() - 1)
-        {
-            o << ", "; // Add a comma if it's not the last element
-        }
+        o << "Error pages: " << it->first << "  " << it->second << " " << std::endl;
+    }
+    o << std::endl;
+    std::map<std::string, std::string> nn = obj.getCgi();
+    for (std::map<std::string, std::string>::iterator it = nn.begin(); it != nn.end(); it++)
+    {
+        o << "Cgi: " << it->first << "  " << it->second << " " << std::endl;
     }
     o << std::endl;
     // std::copy(obj.getIndex().begin(), obj.getIndex().end(), std::ostream_iterator<std::string>(o, ", "));

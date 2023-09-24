@@ -6,7 +6,7 @@
 /*   By: sben-ela <sben-ela@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/05 09:27:53 by aybiouss          #+#    #+#             */
-/*   Updated: 2023/09/22 23:20:04 by sben-ela         ###   ########.fr       */
+/*   Updated: 2023/09/23 22:02:41 by sben-ela         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -210,10 +210,17 @@ std::string Request::getHttpVersion() const
     return this->_httpVersion;
 }
 
-const std::string& Request::getContentType( void ) const
+void    Request::setPAth(std::string newPath)
 {
-    
-    return (_contentType);
+    _path = newPath;
+}
+       
+std::string Request::getContentType( void ) const
+{
+    std::string type;
+
+    type = _path.substr(_path.find('.'));
+    return (type);
 }
 
 std::string  Request::GetFileExtention( void ) const
