@@ -6,7 +6,7 @@
 /*   By: sben-ela <sben-ela@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/17 11:36:51 by sben-ela          #+#    #+#             */
-/*   Updated: 2023/09/24 15:03:24 by sben-ela         ###   ########.fr       */
+/*   Updated: 2023/09/24 15:13:55 by sben-ela         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -188,15 +188,14 @@ void    Get(const Client &client)
         waitpid(pid, 0, 0);
         fd = open (outfile.c_str(), O_CREAT | O_RDWR , 0777);
         if (fd < 0)
-            throw(std::runtime_error("Open Failed"));
+            throw(std::runtime_error("Open Failed  in GET-CGI "));
         // std::cout << "read  bytes : " << read(fd, buff, 10) << std::endl;;
     }
     else
     {
-        
         fd = open (getFilePath(client).c_str(), O_RDONLY);
         if (fd < 0)
-            throw(std::runtime_error("Open Failed"));
+            throw(std::runtime_error("Open Failed in GgI"));
     }
     fstat(fd, &statbuffer);
     ss << statbuffer.st_size;
@@ -213,18 +212,17 @@ void    Get(const Client &client)
 
 bool isDirectory(const char* path) {
     struct stat fileInfo;
-    
+
+    std::cout << "PATH : " << path << std::endl;
     if (stat(path, &fileInfo) != 0)
         throw(std::runtime_error("stat failed in isDirectory"));
 
-    std::cout << "Path : " << path << std::endl;
     return S_ISDIR(fileInfo.st_mode);
 }
 
 void    DirectoryHasIndexFile(Client client, const std::string& indexFile)
 {
     client.response.setPAth(client.response.getPath() + indexFile);
-    std::cout << "New Path : " << client.response.getPath() << std::endl;; 
     Get(client);
 }
 
@@ -247,7 +245,7 @@ void    handleDirectory(Client &client, const std::string& filePath)
                 std::cout << test;
                 std::string header = client.response.getHttpVersion() + " 200 OK\r\nContent-Type: "
                     + "text/html" + "\r\ncontent-length: " + ss.str() + "\r\n\r\n";
-                write(client.GetSocketId(), header.c_str(), header.size()); 
+                write(client.GetSocketId(), header.c_str(), header.size());
                 write(client.GetSocketId(), test.c_str(), test.size());
             }
             else
