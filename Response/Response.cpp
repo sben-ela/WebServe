@@ -6,7 +6,7 @@
 /*   By: sben-ela <sben-ela@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/17 11:36:51 by sben-ela          #+#    #+#             */
-/*   Updated: 2023/09/25 23:39:12 by sben-ela         ###   ########.fr       */
+/*   Updated: 2023/09/26 00:54:38 by sben-ela         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -137,7 +137,8 @@ void    SendErrorPage(Client client, int errorNumber)
         throw(std::runtime_error("open Failed in SendErrorPage !"));
     fstat(efd, &statbuffer);
     ss << statbuffer.st_size;
-    std::string header = client.response.getHttpVersion() + client.getServer().getErrorPages()[errorNumber]+ "\r\ncontent-length: " + ss.str() + "\r\n\r\n";
+    std::string header = client.response.getHttpVersion() + client.response.getStatusCode()[errorNumber] + "\r\nContent-Length: " + ss.str() + "\r\nLocation: " + client.response.getPath() + "/" + "\r\n\r\n";
+    std::cout << header << std::endl;
     write(client.GetSocketId(), header.c_str(), header.size());
     int rd = read(efd, buff, BUFFER_SIZE);
     buff[rd] = '\0';
