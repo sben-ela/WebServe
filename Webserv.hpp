@@ -6,7 +6,7 @@
 /*   By: sben-ela <sben-ela@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/04 12:25:03 by aybiouss          #+#    #+#             */
-/*   Updated: 2023/09/23 14:03:55 by sben-ela         ###   ########.fr       */
+/*   Updated: 2023/09/25 16:17:00 by sben-ela         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -53,12 +53,69 @@
 #include <exception>
 #include <climits>
 #include <sys/types.h>
+#include <iostream>
+#include <fstream>
+#include <string>
+#include <ctime>
+#include <sys/stat.h>
+#include <dirent.h>
+#include <iostream>
+#include <string>
 #include <sys/wait.h>
 // #include "Response/Response.hpp"
-#define BUFFER_SIZE 1024
+
+
 class Client;
-
-void    ft_Response(Client &client);
-
 typedef std::vector<std::string>::iterator TokenVectsIter;
+void    ft_Response(Client &client);
 void sigintHandler(int signal);
+
+// ! new 
+// ? status Code
+#define FILESIZE 10
+#define EXFIALE 13 
+#define BUFFER_SIZE 1024
+#define CONTINUE 100
+#define SWITCHINGPROTOCOLS 101
+
+#define OK 200
+#define CREATED 201
+#define ACCEPTED 202
+#define NONAUTHORITATIVEINFORMATION 203
+#define NOCONTENT 204
+#define RESETCONTENT 205
+#define PARTIALCONTENT 206
+
+#define MULTIPLECHOICES 300
+#define MOVEDPERMANENTLY 301
+#define MOVEDTEMPORARILY 302
+#define SEEOTHER 303
+#define NOTMODIFIED 304
+#define USEPROXY 305
+#define TEMPORARYREDIRECT 307
+
+#define BADREQUEST 400
+#define UNAUTHORIZED 401
+#define PAYMENTREQUIRED 402
+#define FORBIDDEN 403
+#define NOTFOUND 404
+#define NOTALLOWED 405
+#define NOTACCEPTABLE 406
+#define PROXYAUTHENTICATIONREQUIRED 407
+#define REQUESTTIMEOUT 408
+#define CONFLICT 409
+#define GONE 410
+#define LENGTHREQUIRED 411
+#define PRECONDITIONFAILED 412
+#define CONTENTTOLARGE 413
+#define URLTOOLONGE 414
+#define UNSUPPORTEDMEDIATYPE 415
+#define REQUESTEDRANGENOTSATISFIABLE 416
+#define EXPECTATIONFAILED 417
+
+#define INTERNALSERVERERROR 500
+#define NOTIMPLEMENTED 501
+#define BADGATEWAY 502
+#define SERVICEUNAVAILABLE 503
+#define GATEWAYTIMEOUT 504
+#define HTTPVERSIONNOTSUPPORTED 505

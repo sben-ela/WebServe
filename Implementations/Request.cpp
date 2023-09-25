@@ -6,7 +6,7 @@
 /*   By: sben-ela <sben-ela@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/05 09:27:53 by aybiouss          #+#    #+#             */
-/*   Updated: 2023/09/23 22:02:41 by sben-ela         ###   ########.fr       */
+/*   Updated: 2023/09/25 18:14:34 by sben-ela         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -217,10 +217,7 @@ void    Request::setPAth(std::string newPath)
        
 std::string Request::getContentType( void ) const
 {
-    std::string type;
-
-    type = _path.substr(_path.find('.'));
-    return (type);
+    return ("text/plain");
 }
 
 std::string  Request::GetFileExtention( void ) const
@@ -243,6 +240,52 @@ std::string Request::getResponseStatus() const
 void Request::setResponseStatus(const std::string& status) {
     _responseStatus = status;
 }
+
+std::map<int, std::string> Request::getStatusCode( void ) const
+{
+    return(_statusCode);
+}
+
+void Request::CreateStatusCode()
+{
+    _statusCode[OK] = " 200 OK";
+    _statusCode[CREATED] = " 201 Created";
+    _statusCode[MOVEDPERMANENTLY] = " 301 Moved Permanently";
+    _statusCode[NOTALLOWED] = " 405 Method Not Allowed";
+    _statusCode[CONTENTTOLARGE] = " 413 Request Entity Too Large";
+    _statusCode[URLTOOLONGE] = " 414 Request-URI Too Long";
+    _statusCode[MOVEDTEMPORARILY] = " 302 Moved Temporarily";
+    _statusCode[USEPROXY] = " 305 Use Proxy";
+    _statusCode[MULTIPLECHOICES] = " 300 Multiple Choices";
+    _statusCode[NOCONTENT] = " 204 No Content";
+    _statusCode[RESETCONTENT] = " 205 Reset Content";
+    _statusCode[PARTIALCONTENT] = " 206 Partial Content";
+    _statusCode[SEEOTHER] = " 303 See Other";
+    _statusCode[NOTMODIFIED] = " 304 Not Modified";
+    _statusCode[TEMPORARYREDIRECT] = " 307 Temporary Redirect";
+    _statusCode[BADREQUEST] = " 400 Bad Request";
+    _statusCode[UNAUTHORIZED] = " 401 Unauthorized";
+    _statusCode[PAYMENTREQUIRED] = "402 Payment Required";
+    _statusCode[FORBIDDEN] = " 403 Forbidden";
+    _statusCode[NOTFOUND] = " 404 Not Found";
+    _statusCode[NOTACCEPTABLE] = " 406 Not Acceptable";
+    _statusCode[PROXYAUTHENTICATIONREQUIRED] = " 407 Proxy Authentication Required";
+    _statusCode[REQUESTTIMEOUT] = " 408 Request Time-out";
+    _statusCode[CONFLICT] = " 409 Conflict";
+    _statusCode[GONE] = " 410 Gone";
+    _statusCode[LENGTHREQUIRED] = " 411 Length Required";
+    _statusCode[PRECONDITIONFAILED] = " 412 Precondition Failed";
+    _statusCode[UNSUPPORTEDMEDIATYPE] = " 415 Unsupported Media Type";
+    _statusCode[REQUESTEDRANGENOTSATISFIABLE] = " 416 Requested range not satisfiable";
+    _statusCode[EXPECTATIONFAILED] = " 417 Expectation Failed";
+    _statusCode[INTERNALSERVERERROR] = " 500 Internal Server Error";
+    _statusCode[NOTIMPLEMENTED] = " 501 Not Implemented";
+    _statusCode[BADGATEWAY] = " 502 Bad Gateway";
+    _statusCode[SERVICEUNAVAILABLE] = " 503 Service Unavailable";
+    _statusCode[GATEWAYTIMEOUT] = " 504 Gateway Time-out";
+    _statusCode[HTTPVERSIONNOTSUPPORTED] = " 505 HTTP Version not supported";
+}
+
 
 Request::~Request() {}
 

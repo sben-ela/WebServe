@@ -6,15 +6,13 @@
 /*   By: sben-ela <sben-ela@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/17 11:36:51 by sben-ela          #+#    #+#             */
-/*   Updated: 2023/09/24 15:13:55 by sben-ela         ###   ########.fr       */
+/*   Updated: 2023/09/25 23:39:12 by sben-ela         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../Webserv.hpp"
 #include "../Includes/Configuration.hpp"
 #include "../Includes/Client.hpp"
-#define FILESIZE 10
-#define EXFIALE 13 
 
 
 void    SeparatesHeader(std::string& str)
@@ -36,10 +34,10 @@ std::string GenerateFile( void )
 }
 
 
-void ft_putstr(char *str)
+void ft_putstr(char *str, int size)
 {
     int i = 0;
-    while (i < BUFFER_SIZE)
+    while (i < size)
     {
         if (write (1 , &str[i], 1) < 0)
         {
@@ -65,14 +63,6 @@ size_t getLocationIndex(const Client& client)
 	return(0);
 }
 
-#include <iostream>
-#include <fstream>
-#include <string>
-#include <ctime>
-#include <sys/stat.h>
-#include <dirent.h>
-#include <iostream>
-#include <string>
 
 std::string GenerateDirectoryListing(const std::string& directoryPath) {
     std::string html;
@@ -119,12 +109,11 @@ std::string GenerateDirectoryListing(const std::string& directoryPath) {
 std::string getFileName(const std::string& path, size_t first)
 {
     std::string fileName = path.substr(first);
-    if (fileName[0] != '/')
-        return("/" + fileName);
-    return(fileName);
+
+    return("/" + fileName);
 }
 
-std::string  getFilePath(const Client& client)
+std::string     getFilePath(const Client& client)
 {
     std::string filePath;
 	size_t index;
@@ -136,38 +125,63 @@ std::string  getFilePath(const Client& client)
 	return (filePath);
 }
 
-void	SendErrorPage(Client client, int errorNumber)
+void    SendErrorPage(Client client, int errorNumber)
 {
+
     std::stringstream ss;
     struct stat statbuffer;
     char buff[BUFFER_SIZE];
 
-    std::cout << client.getServer().getErrorPages()[errorNumber].c_str() << std::endl;
     int efd = open(client.getServer().getErrorPages()[errorNumber].c_str(), O_RDONLY);
     if (efd < 0)
         throw(std::runtime_error("open Failed in SendErrorPage !"));
     fstat(efd, &statbuffer);
-    ss << statbuffer.st_size; /// ! 200 ok khas tbdel bl error
-    std::string header = client.response.getHttpVersion() + "200 ok" + "\r\ncontent-length: " + ss.str() + "\r\n\r\n";
+    ss << statbuffer.st_size;
+    std::string header = client.response.getHttpVersion() + client.getServer().getErrorPages()[errorNumber]+ "\r\ncontent-length: " + ss.str() + "\r\n\r\n";
     write(client.GetSocketId(), header.c_str(), header.size());
     int rd = read(efd, buff, BUFFER_SIZE);
     buff[rd] = '\0';
     write(client.GetSocketId(), buff, BUFFER_SIZE);
 }
 
+const char *get_content_type(const char* path)
+{
+    const char *last_dot = strrchr(path, '.');
+    if (last_dot)
+    {
+        if (strcmp(last_dot, ".css") == 0) return "text/css";
+        if (strcmp(last_dot, ".csv") == 0) return "text/csv";
+        if (strcmp(last_dot, ".gif") == 0) return "image/gif";
+        if (strcmp(last_dot, ".htm") == 0) return "text/html";
+        if (strcmp(last_dot, ".html") == 0) return "text/html";
+        if (strcmp(last_dot, ".ico") == 0) return "image/x-icon";
+        if (strcmp(last_dot, ".jpeg") == 0) return "image/jpeg";
+        if (strcmp(last_dot, ".mp4") == 0) return "video/mp4";
+        if (strcmp(last_dot, ".jpg") == 0) return "image/jpeg";
+        if (strcmp(last_dot, ".js") == 0) return "application/javascript";
+        if (strcmp(last_dot, ".json") == 0) return "application/json";
+        if (strcmp(last_dot, ".png") == 0) return "image/png";
+        if (strcmp(last_dot, ".pdf") == 0) return "application/pdf";
+        if (strcmp(last_dot, ".svg") == 0) return "image/svg+xml";
+        if (strcmp(last_dot, ".txt") == 0) return "text/plain";
+        if (strcmp(last_dot, ".py") == 0) return "text/plain";
+        if (strcmp(last_dot, ".php") == 0) return "text/plain";
+    }
+    return ("application/octet-stream");
+}
 void    Get(const Client &client)
 {
     char buff[BUFFER_SIZE];
     std::string header;
     std::stringstream ss;
     struct stat statbuffer;
+    int readBytes = 0;
     int fd;
 
-    // std::cout << getFilePath(client).c_str() << std::endl;;
+    memset(buff, 0, BUFFER_SIZE);
     if (client.response.GetFileExtention() == ".php" || client.response.GetFileExtention() == ".py")
     {
         std::string outfile = GenerateFile();
-        // std::cout << outfile << std::endl;
         int pid  = fork();
         if (!pid)
         {
@@ -189,7 +203,8 @@ void    Get(const Client &client)
         fd = open (outfile.c_str(), O_CREAT | O_RDWR , 0777);
         if (fd < 0)
             throw(std::runtime_error("Open Failed  in GET-CGI "));
-        // std::cout << "read  bytes : " << read(fd, buff, 10) << std::endl;;
+        if (client.response.GetFileExtention() == ".php")
+            readBytes = read(fd, buff, 42);
     }
     else
     {
@@ -198,22 +213,21 @@ void    Get(const Client &client)
             throw(std::runtime_error("Open Failed in GgI"));
     }
     fstat(fd, &statbuffer);
-    ss << statbuffer.st_size;
+    ss << statbuffer.st_size - readBytes;
     header = client.response.getHttpVersion() + " 200 OK\r\nContent-Type: "
-    + client.response.getContentType() + "\r\ncontent-length: " + ss.str() + "\r\n\r\n";
-
+    + get_content_type(client.response.getPath().c_str()) + "\r\nContent-Length: " + ss.str() + "\r\n\r\n";
     send(client.GetSocketId(), header.c_str(), header.size(), 0);
     while (read(fd, buff, BUFFER_SIZE) > 0)
-        if (write (client.GetSocketId() , buff, BUFFER_SIZE) < 0)
+    {
+        if (write(client.GetSocketId() , buff, BUFFER_SIZE) < 0)
             throw(std::runtime_error("Write buff in Get Failed"));
-    sleep(2);
+    }
     close (fd);
 }
 
 bool isDirectory(const char* path) {
     struct stat fileInfo;
 
-    std::cout << "PATH : " << path << std::endl;
     if (stat(path, &fileInfo) != 0)
         throw(std::runtime_error("stat failed in isDirectory"));
 
@@ -229,22 +243,19 @@ void    DirectoryHasIndexFile(Client client, const std::string& indexFile)
 void    handleDirectory(Client &client, const std::string& filePath)
 {
     size_t locationIndex = getLocationIndex(client);
-    std::cout << "locationIndex : " << locationIndex << std::endl;
     if (filePath[filePath.size() - 1] != '/')
-        SendErrorPage(client, 403); // ! must be 301
+        SendErrorPage(client, MOVEDPERMANENTLY);
     else
     {
-        std::cout << " indexFile :" << client.getServer().getLocations()[locationIndex].getIndex() << ":" << std::endl;
         if (client.getServer().getLocations()[locationIndex].getIndex().empty() && client.getServer().getIndex().empty())
         {
             if (client.getServer().getLocations()[locationIndex].getAutoIndex())
             {
                 std::stringstream ss;
-                std::string test = GenerateDirectoryListing("/nfs/homes/sben-ela/WebServe");
+                std::string test = GenerateDirectoryListing(filePath);
                 ss << test.size();
-                std::cout << test;
                 std::string header = client.response.getHttpVersion() + " 200 OK\r\nContent-Type: "
-                    + "text/html" + "\r\ncontent-length: " + ss.str() + "\r\n\r\n";
+                    + "text/html" + "\r\nContent-length: " + ss.str() + "\r\n\r\n";
                 write(client.GetSocketId(), header.c_str(), header.size());
                 write(client.GetSocketId(), test.c_str(), test.size());
             }
@@ -262,8 +273,9 @@ void    ft_Response(Client &client)
 {
     try
     {
+        
         std::string filePath = getFilePath(client).c_str();
-        std::cout << "File Path :: " << filePath << std::endl;
+    
         if (access(filePath.c_str(), F_OK))
             SendErrorPage(client, 404);
         else if (access(filePath.c_str(), R_OK))
@@ -281,6 +293,8 @@ void    ft_Response(Client &client)
     catch(std::exception &e)
     {
         std::cout << e.what() << std::endl;
+        std::cout << "###################################################" << std::endl;
+        // exit(0);
     }
 }
 

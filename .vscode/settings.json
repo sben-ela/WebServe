@@ -7,6 +7,8 @@
         "sstream": "cpp",
         "exception": "cpp",
         "stdexcept": "cpp",
-        "fstream": "cpp"
+        "fstream": "cpp",
+        "climits": "cpp",
+        "string": "cpp"
     }
 }

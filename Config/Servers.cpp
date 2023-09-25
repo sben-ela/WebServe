@@ -6,7 +6,7 @@
 /*   By: sben-ela <sben-ela@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/04 13:11:31 by aybiouss          #+#    #+#             */
-/*   Updated: 2023/09/24 14:54:36 by sben-ela         ###   ########.fr       */
+/*   Updated: 2023/09/25 16:21:44 by sben-ela         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -214,11 +214,8 @@ int Servers::AllServers()
                 else
                 {
                     i = its->response.parseHttpRequest(buffer, its->GetSocketId());
-                    // std::cout << its->response.getMethod()<< std::endl;
-                    // std::cout << its->response.getPath() << std::endl;
-                    // std::cout << its->response.getHttpVersion() << std::endl;
+                    (*its).response.CreateStatusCode();
                     ft_Response(*its);
-                    // exit(21);
                     if (!i) // la 9ra kolchi
                     {
                         FD_CLR(its->GetSocketId(), &read_fds);

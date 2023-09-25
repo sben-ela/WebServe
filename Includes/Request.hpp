@@ -6,7 +6,7 @@
 /*   By: sben-ela <sben-ela@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/04 17:07:10 by aybiouss          #+#    #+#             */
-/*   Updated: 2023/09/23 22:02:04 by sben-ela         ###   ########.fr       */
+/*   Updated: 2023/09/25 16:16:33 by sben-ela         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,11 +24,16 @@ class Request
         std::string     _header_before;
         std::string     _body;
         std::string     _contentType;
-        std::map<std::string, std::string> _headers;
         const char*     _bodyFile;
+        std::map<std::string, std::string>  _headers;
+        std::map<int, std::string>          _statusCode;
     public:
         Request();
+        std::map<std::string, std::string> getHeaders(){
+            return (_headers);
+        }
         int                 parseHttpRequest(const std::string& requestBuffer, int new_socket);
+        std::map<int, std::string> getStatusCode( void ) const;
         std::string         getPath() const;
         std::string         getMethod() const;
         std::string         getHttpVersion() const;
@@ -40,5 +45,6 @@ class Request
         int                 processChunk(const std::string& buffer); // int socket ?
         int                 parseRequest();
         void                processBody();
+        void                CreateStatusCode( void ); // ! new
         ~Request();
 };
