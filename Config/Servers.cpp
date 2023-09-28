@@ -6,7 +6,7 @@
 /*   By: sben-ela <sben-ela@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/04 13:11:31 by aybiouss          #+#    #+#             */
-/*   Updated: 2023/09/25 16:21:44 by sben-ela         ###   ########.fr       */
+/*   Updated: 2023/09/27 16:58:50 by sben-ela         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -198,7 +198,7 @@ int Servers::AllServers()
         {
             if (FD_ISSET(its->GetSocketId(), &tmp_read))
             {
-                char buffer[1000000] = {0};
+                char buffer[1024] = {0};
                 // Read the HTTP request from the client
                 ssize_t bytesRead = recv(its->GetSocketId(), buffer, sizeof(buffer) - 1, 0);
                 if (bytesRead < 0)

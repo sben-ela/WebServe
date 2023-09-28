@@ -5,10 +5,12 @@
 /*                                                    +:+ +:+         +:+     */
 /*   By: sben-ela <sben-ela@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2023/09/04 12:25:03 by aybiouss          #+#    #+#             */
-/*   Updated: 2023/09/25 16:17:00 by sben-ela         ###   ########.fr       */
+/*   Created: 2023/09/26 16:22:49 by sben-ela          #+#    #+#             */
+/*   Updated: 2023/09/28 18:06:24 by sben-ela         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
+
+
 
 #pragma once
 
@@ -68,9 +70,10 @@
 class Client;
 typedef std::vector<std::string>::iterator TokenVectsIter;
 void    ft_Response(Client &client);
-void sigintHandler(int signal);
+void     sigintHandler(int signal);
 
 // ! new 
+void     Delete_dir(const std::string& folderPath);
 // ? status Code
 #define FILESIZE 10
 #define EXFIALE 13 

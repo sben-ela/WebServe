@@ -6,7 +6,7 @@
 /*   By: sben-ela <sben-ela@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/20 13:32:08 by aybiouss          #+#    #+#             */
-/*   Updated: 2023/09/24 15:27:51 by sben-ela         ###   ########.fr       */
+/*   Updated: 2023/09/27 21:35:37 by sben-ela         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,10 +16,12 @@
 #include "Configuration.hpp"
 #include "Response.hpp"
 
+
+
 class Client
 {
     private : 
-        int         _socketId;
+        int             _socketId;
         Configuration   _client_server;
     public : 
         Response    response;

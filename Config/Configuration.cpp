@@ -6,7 +6,7 @@
 /*   By: sben-ela <sben-ela@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/05 09:26:09 by aybiouss          #+#    #+#             */
-/*   Updated: 2023/09/26 00:33:29 by sben-ela         ###   ########.fr       */
+/*   Updated: 2023/09/27 17:17:23 by sben-ela         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -240,7 +240,7 @@ bool Configuration::checkLocations() const
 
 Configuration::Configuration(const Configuration& other)
     : _root(other._root), _host(other._host), _index(other._index),
-      _error_pages(other._error_pages), _codes(other._codes), _client_max_body_size(other._client_max_body_size),
+      _error_pages(other._error_pages), _codes(other._codes), _cgi(other._cgi), _client_max_body_size(other._client_max_body_size),
       _AutoIndex(other._AutoIndex), _root_exists(other._root_exists), _port(other._port),
       _host_exists(other._host_exists), _port_exists(other._port_exists),
       _server_name(other._server_name), _locations(other._locations) {}
