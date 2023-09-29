@@ -6,7 +6,7 @@
 /*   By: sben-ela <sben-ela@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/05 09:27:53 by aybiouss          #+#    #+#             */
-/*   Updated: 2023/09/27 21:23:26 by sben-ela         ###   ########.fr       */
+/*   Updated: 2023/09/29 11:46:31 by sben-ela         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -244,6 +244,11 @@ void Request::setResponseStatus(const std::string& status) {
 std::map<int, std::string> Request::getStatusCode( void ) const
 {
     return(_statusCode);
+}
+
+const int& Request::getBadyFd( void ) const
+{
+    return(_fd);
 }
 
 void Request::CreateStatusCode()

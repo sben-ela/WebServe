@@ -6,7 +6,7 @@
 /*   By: sben-ela <sben-ela@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/04 17:07:10 by aybiouss          #+#    #+#             */
-/*   Updated: 2023/09/26 00:39:46 by sben-ela         ###   ########.fr       */
+/*   Updated: 2023/09/29 11:45:37 by sben-ela         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,6 +27,7 @@ class Request
         const char*     _bodyFile;
         std::map<std::string, std::string>  _headers;
         std::map<int, std::string>          _statusCode;
+        int _fd;
     public:
         Request();
         std::map<std::string, std::string> getHeaders(){
@@ -46,5 +47,6 @@ class Request
         int                 parseRequest();
         void                processBody();
         void                CreateStatusCode( void ); // ! new
+        const int &getBadyFd( void ) const;
         ~Request();
 };

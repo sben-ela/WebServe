@@ -6,7 +6,7 @@
 /*   By: sben-ela <sben-ela@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/20 13:32:08 by aybiouss          #+#    #+#             */
-/*   Updated: 2023/09/27 21:35:37 by sben-ela         ###   ########.fr       */
+/*   Updated: 2023/09/29 11:30:39 by sben-ela         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,6 +17,13 @@
 #include "Response.hpp"
 
 
+struct   Methods
+{
+    bool _get;
+    bool _post;
+    bool _delete;
+};
+
 
 class Client
 {
@@ -24,6 +31,7 @@ class Client
         int             _socketId;
         Configuration   _client_server;
     public : 
+        Methods     methods;
         Response    response;
         Client() {};
         const int&          GetSocketId( void ) const;
