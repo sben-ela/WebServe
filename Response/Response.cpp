@@ -6,7 +6,7 @@
 /*   By: sben-ela <sben-ela@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/17 11:36:51 by sben-ela          #+#    #+#             */
-/*   Updated: 2023/09/28 18:24:05 by sben-ela         ###   ########.fr       */
+/*   Updated: 2023/09/29 10:03:25 by sben-ela         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -114,7 +114,6 @@ std::string     getFilePath(const Client& client)
 
 void    SendErrorPage(Client client, int errorNumber)
 {
-
     std::stringstream ss;
     struct stat statbuffer;
     char buff[BUFFER_SIZE];
@@ -122,7 +121,7 @@ void    SendErrorPage(Client client, int errorNumber)
 
     int efd = open(client.getServer().getErrorPages()[errorNumber].c_str(), O_RDONLY);
     if (efd < 0)
-        throw(std::runtime_error("open Failed in SendErrorPage !"));
+        throw(std::runtime_error("Invalid Error page !"));
     fstat(efd, &statbuffer);
     ss << statbuffer.st_size;
     if (errorNumber == MOVEDPERMANENTLY)
@@ -334,7 +333,7 @@ void    ft_delete(Client &client)
         if (targetPath[targetPath.size() - 1] != '/')
             SendErrorPage(client, CONFLICT);
         else if(client.getServer().getLocations()[locationIndex].getIndex().empty() && client.getServer().getIndex().empty())
-               Delete_dir(targetPath);
+            Delete_dir(targetPath);
         else if (!client.getServer().getLocations()[locationIndex].getIndex().empty())
             checkIndexFile(client, client.getServer().getLocations()[locationIndex].getIndex(), targetPath);
         else if (!client.getServer().getIndex().empty())
@@ -358,7 +357,7 @@ void    ft_Response(Client &client)
             SendErrorPage(client, NOTFOUND);
         else if (access(filePath.c_str(), R_OK))
             SendErrorPage(client, FORBIDDEN);
-        if (client.response.getMethod() == "GET")
+        else if (client.response.getMethod() == "GET")
         {
             if (!methods._get)
                 throw(FORBIDDEN);
@@ -366,9 +365,9 @@ void    ft_Response(Client &client)
                 handleDirectory(client, filePath);
             else
                 Get(client);
-            // ft_delete(client);
         }
-        // Delete()
+        else if (client.response.getMethod() == "DELETE")
+            ft_delete(client);
         // else if (client.response.getMethod() == "POST")
         // {
         //     if (!methods._post)
