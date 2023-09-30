@@ -6,7 +6,7 @@
 /*   By: sben-ela <sben-ela@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/13 14:54:36 by aybiouss          #+#    #+#             */
-/*   Updated: 2023/09/29 18:32:06 by sben-ela         ###   ########.fr       */
+/*   Updated: 2023/09/30 18:13:50 by sben-ela         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,6 +23,8 @@ class Servers
         std::vector<Client>          _client;
     public:
         Servers();
+        Servers(const Servers& other);
+        Servers& operator=(const Servers& other);
         int    ConfigFileParse(std::string file);
         void printServerData() const;
         int AllServers();

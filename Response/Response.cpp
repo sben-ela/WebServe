@@ -6,7 +6,7 @@
 /*   By: sben-ela <sben-ela@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/17 11:36:51 by sben-ela          #+#    #+#             */
-/*   Updated: 2023/09/30 16:05:26 by sben-ela         ###   ########.fr       */
+/*   Updated: 2023/09/30 18:32:17 by sben-ela         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -48,7 +48,6 @@ std::string GenerateDirectoryListing(const std::string& directoryPath) {
     html += "<html><head><title>Directory Listing</title></head><body>";
     html += "<h1>Directory Listing</h1>";
     html += "<table border='1'><tr><th>Name</th><th>Size</th><th>Date Modified</th></tr>";
-    std::stringstream ss;
     
     // Open the directory
     DIR* dir = opendir(directoryPath.c_str());
@@ -65,7 +64,8 @@ std::string GenerateDirectoryListing(const std::string& directoryPath) {
                     if (S_ISDIR(fileStat.st_mode)) {
                         fileSize = "Directory";
                     } else {
-                        ss >> fileStat.st_size;
+                        std::stringstream ss;
+                        ss << fileStat.st_size;
                         fileSize = ss.str() + " bytes";
                     }
 
@@ -391,7 +391,10 @@ void    ft_Response(Client &client)
             if (!client.methods._post)
                 throw(FORBIDDEN);
             if (client.getServer().getLocations()[index].getUpload().empty())
+            {
+                client._readStatus = 0;
                 throw(std::runtime_error("empty upload path"));
+            }
             if (isDirectory(filePath.c_str()))
                 handleDirectory(client, filePath);
             else

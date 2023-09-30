@@ -6,7 +6,7 @@
 /*   By: sben-ela <sben-ela@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/05 09:27:53 by aybiouss          #+#    #+#             */
-/*   Updated: 2023/09/30 16:29:55 by sben-ela         ###   ########.fr       */
+/*   Updated: 2023/09/30 18:48:09 by sben-ela         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -110,7 +110,7 @@ std::string Request::GenerateFile() {
     std::string file;
     
     // Create the directory if it doesn't exist
-    const char* dir_path = "/nfs/homes/sben-ela/save/POSTs/";
+    const char* dir_path = "/nfs/sgoinfre/goinfre/Perso/sben-ela/";
     if (mkdir(dir_path, 0777) != 0 && errno != EEXIST) {
         std::cerr << "Failed to create directory: " << strerror(errno) << std::endl;
         return "";  // Return an empty string to indicate failure
@@ -213,10 +213,10 @@ int    Request::parseHeaders()
         return 0;
     }
     //This splitting is achieved by using the >> operator, which is used to extract values from the input stream (requestLineStream in this case) based on whitespace (spaces or tabs) as the delimiter.
-    // if (_path == "/favicon.ico") {
-    //     // Handle it as needed (status), or simply return an empty request
-    //     return 0;
-    // }
+    if (_path == "/favicon.ico") {
+        // Handle it as needed (status), or simply return an empty request
+        return 0;
+    }
     std::string forBody;
     // Read and parse headers
     while (std::getline(requestStream, line) && !line.empty()) {
