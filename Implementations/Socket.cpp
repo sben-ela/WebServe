@@ -112,7 +112,7 @@ int Socket::function() {
                 if (valread <= 0) {
                     perror("Read error");
                 }
-                response.parseHttpRequest(buffer, sd);
+                // response.parseHttpRequest(buffer, sd);
                 // std::cout << request.getMethod()<< std::endl;
                 // std::cout << request.getPath() << std::endl;
                 // std::cout << request.getHttpVersion() << std::endl;

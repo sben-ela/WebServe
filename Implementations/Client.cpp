@@ -6,21 +6,13 @@
 /*   By: sben-ela <sben-ela@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/20 13:32:21 by aybiouss          #+#    #+#             */
-/*   Updated: 2023/09/27 21:35:49 by sben-ela         ###   ########.fr       */
+/*   Updated: 2023/09/29 19:02:27 by sben-ela         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../Includes/Client.hpp"
 
-// Client::Client(std::string method, std::string path, std::string fileExtention, std::string contentType, std::string httpVersion, int socketId)
-// {
-//     _method = method;
-//     _path = path;
-//     _fileExtention = fileExtention;
-//     _contentType = contentType;
-//     _httpVersion = httpVersion;
-//     _socketId = socketId;
-// }
+Client::Client() : _status(0) {}
 
 void    Client::set_server(Configuration p)
 {
@@ -31,37 +23,39 @@ void    Client::set_socket(int socket)
     _socketId = socket;
 }
 
-const Configuration&      Client::getServer( void ) const
-{
-    return (_client_server);
-}
-
 const int& Client::GetSocketId( void ) const
 {       
     return (_socketId);
 }
 
-// const std::string& Client::GetMethod( void ) const
-// {
-//     return (_method);
-// }
+Client::Client(const Client& other)
+{
+    if (this != &other)
+    {
+        this->_socketId = other._socketId;
+        _readStatus = other._readStatus;
+        this->_client_server = other._client_server;
+        _status = other._status;
+        this->response = other.response;
+    }
+}
 
-// const std::string& Client::GetPath( void ) const
-// {
-//     return (_path);
-// }
+Client& Client::operator=(const Client& other)
+{
+    if (this != &other)
+    {
+        this->_socketId = other._socketId;
+        _readStatus = other._readStatus;
+        _status = other._status;
+        this->_client_server = other._client_server;
+        this->response = other.response;
+    }
+    return *this;
+}
 
-// const std::string& Client::GetConetType( void ) const
-// {
-//     return (_contentType);
-// }
+const Configuration&      Client::getServer( void ) const
+{
+    return (_client_server);
+}
 
-// const std::string& Client::GetHttpVersion( void ) const
-// {
-//     return (_httpVersion);
-// }
-
-// const std::string&  Client::GetFileExtention( void ) const
-// {
-//     return (_fileExtention);
-// }
+Client::~Client() {}

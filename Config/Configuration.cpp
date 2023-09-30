@@ -6,7 +6,7 @@
 /*   By: sben-ela <sben-ela@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/05 09:26:09 by aybiouss          #+#    #+#             */
-/*   Updated: 2023/09/27 17:17:23 by sben-ela         ###   ########.fr       */
+/*   Updated: 2023/09/29 14:01:37 by sben-ela         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -121,7 +121,9 @@ Configuration::Configuration(std::vector<std::string> vecteur)
             // Extract and set CGI settings
             ++begin;
             if (token.size() == 3 && begin != end)
+            {
                 InitCgi(token[1], token[2]);
+            }
             else
                 throw std::string("Invalid cgi arguments");
         }
@@ -268,12 +270,9 @@ Configuration& Configuration::operator=(const Configuration& other)
     return *this;
 }
 
-std::map<std::string, std::string>  Configuration::getCgi() const
-{
-    return _cgi;
-}
 void Configuration::InitCgi(std::string path, std::string lang)
 {
+    std::cout << "Print cgi  " << lang << "  " << path << std::endl;
     if (!lang.empty() && !path.empty())
     {
         // Store the CGI setting in the _cgi map.
@@ -399,6 +398,11 @@ std::string Configuration::getIndex() const
     return _index;
 }
 
+std::map<std::string, std::string> Configuration::getCgi() const
+{
+    return _cgi;
+}
+
 std::map<int, std::string> Configuration::getErrorPages() const
 {
     return _error_pages;
@@ -446,8 +450,14 @@ std::ostream& operator<<(std::ostream& o, Configuration obj)
     {
         o << "Error pages: " << it->first << "  " << it->second << " " << std::endl;
     }
-    o << std::endl;
+    // o << std::endl;
     // Output location blocks
+    std::map<std::string, std::string> b = obj.getCgi();
+    for (std::map<std::string, std::string>::iterator it = b.begin(); it != b.end(); it++)
+    {
+        o << "cgi: " << it->first << "  " << it->second << " " << std::endl;
+    }
+    o << std::endl;
     std::vector<Location> loca = obj.getLocations();
     for (std::vector<Location>::iterator it = loca.begin(); it != loca.end(); ++it) {
         std::cout << *it << std::endl;

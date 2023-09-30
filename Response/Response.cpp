@@ -6,7 +6,7 @@
 /*   By: sben-ela <sben-ela@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/17 11:36:51 by sben-ela          #+#    #+#             */
-/*   Updated: 2023/09/29 11:59:57 by sben-ela         ###   ########.fr       */
+/*   Updated: 2023/09/30 16:05:26 by sben-ela         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,6 +35,7 @@ size_t getLocationIndex(const Client& client)
 	index = client.getServer().getLocations().size() - 1;;
 	while (index > 0)
 	{
+        std::cout << "*****************************************" << std::endl;
 		if (client.getServer().getLocations()[index].getpattern() == client.response.getPath().substr(0, client.getServer().getLocations()[index].getpattern().size()))
 			return(index);
 		index--;
@@ -87,6 +88,7 @@ std::string GenerateDirectoryListing(const std::string& directoryPath) {
 /// @brief get the requested path without the location name
 std::string getFileName(const std::string& path, size_t first)
 {
+
     std::string fileName = path.substr(first);
 
     return("/" + fileName);
@@ -105,7 +107,7 @@ std::string     getFilePath(const Client& client)
 	return (filePath);
 }
 
-void    SendErrorPage(Client client, int errorNumber)
+void    SendErrorPage(Client &client, int errorNumber)
 {
     std::stringstream ss;
     struct stat statbuffer;
@@ -125,6 +127,7 @@ void    SendErrorPage(Client client, int errorNumber)
     int rd = read(efd, buff, BUFFER_SIZE);
     buff[rd] = '\0';
     write(client.GetSocketId(), buff, BUFFER_SIZE);
+    client._readStatus = 0;
 }
 
 const char *get_content_type(const char* path)
@@ -161,8 +164,24 @@ std::string getExtention(const std::string& filePath)
     return(filePath.substr(dotIndex));
 }
 
+void ft_send(Client& client)
+{
+    std::cout << "FT_SEND" << std::endl;
+    char buff[BUFFER_SIZE];
+
+    if ((client._readStatus = read(client._content_fd, buff, BUFFER_SIZE)) > 0)
+    {
+        std::cout << "ID : " << client.GetSocketId() << std::endl;
+        if (write(client.GetSocketId() , buff, BUFFER_SIZE) < 0)
+        {
+            // client._readStatus = 0;
+            std::cout << "write Failed in Ft_Send()" << std::endl;
+        }
+    }
+}
+
 /// @brief GET method
-void    Get(const Client &client)
+void    Get(Client &client)
 {
     char buff[BUFFER_SIZE];
     std::string header;
@@ -189,7 +208,7 @@ void    Get(const Client &client)
             close(fd);
             if (client.response.getMethod() == "POST")
             {
-                bodyFd = client.response.getBadyFd();
+                bodyFd = client.response.getFd();
                 dup2(bodyFd, 0);
             }
             execve(Path[0], Path, 0); // ! env itzad
@@ -214,12 +233,8 @@ void    Get(const Client &client)
     header = client.response.getHttpVersion() + " 200 OK\r\nContent-Type: "
     + get_content_type(client.response.getPath().c_str()) + "\r\nContent-Length: " + ss.str() + "\r\n\r\n";
     send(client.GetSocketId(), header.c_str(), header.size(), 0);
-    while (read(fd, buff, BUFFER_SIZE) > 0)
-    {
-        if (write(client.GetSocketId() , buff, BUFFER_SIZE) < 0)
-            throw(std::runtime_error("Write buff in Get Failed"));
-    }
-    close (fd);
+    client._content_fd = fd;
+    client._status = 1;
 }
 
 bool file_exists(const std::string &filename)
@@ -239,9 +254,9 @@ bool isDirectory(const char* path) {
 }
 
 
-void    DirectoryHasIndexFile(Client client, const std::string& indexFile)
+void    DirectoryHasIndexFile(Client &client, const std::string& indexFile)
 {
-    client.response.setPAth(client.response.getPath() + indexFile);
+    client.response.setPath(client.response.getPath() + indexFile);
     if (file_exists(client.response.getPath())) // ! protect invalid index file
         Get(client);
     else
@@ -265,6 +280,9 @@ void    handleDirectory(Client &client, const std::string& filePath)
                 + "text/html" + "\r\nContent-length: " + ss.str() + "\r\n\r\n";
             write(client.GetSocketId(), header.c_str(), header.size());
             write(client.GetSocketId(), test.c_str(), test.size());
+            client._readStatus = 0;
+            // client._status = 1;
+            throw(0);
         }
         else
             SendErrorPage(client, FORBIDDEN);
@@ -346,7 +364,10 @@ void    ft_Response(Client &client)
 {
     try
     {
-        std::cout << "********************START-RESPONSE*******************" << std::endl;\
+        std::cout << "********************START-RESPONSE*******************" << std::endl;
+        if (client.response.getPath().empty())
+            exit(127);
+        client.response.CreateStatusCode();
         std::string filePath = getFilePath(client).c_str();
         short index = getLocationIndex(client);
         initMethods(client.methods, client.getServer().getLocations()[index].getLimit_except());
@@ -383,7 +404,8 @@ void    ft_Response(Client &client)
     }
     catch(int errorNumber)
     {
-        SendErrorPage(client, errorNumber);
+        if (errorNumber != 0)
+            SendErrorPage(client, errorNumber);
     }
     std::cout << "********************END-RESPONSE*******************" << std::endl;
 }

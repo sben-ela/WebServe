@@ -45,3 +45,16 @@ void    Response::Function()
     // //     std::cout << it->first << it->second << std::endl;
     // // }
 }
+
+Response::Response() {}
+
+Response::Response(const Response& other) : Request(other) {}
+
+Response& Response::operator=(const Response& other)
+{
+    if (this != &other)
+        Request::operator=(other);
+    return *this;
+}
+
+Response::~Response() {}

@@ -6,7 +6,7 @@
 /*   By: sben-ela <sben-ela@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/20 13:32:08 by aybiouss          #+#    #+#             */
-/*   Updated: 2023/09/29 11:30:39 by sben-ela         ###   ########.fr       */
+/*   Updated: 2023/09/30 11:47:04 by sben-ela         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,7 +15,6 @@
 #include "../Webserv.hpp"
 #include "Configuration.hpp"
 #include "Response.hpp"
-
 
 struct   Methods
 {
@@ -27,15 +26,21 @@ struct   Methods
 
 class Client
 {
-    private : 
-        int             _socketId;
+    private:
+        int         _socketId;
         Configuration   _client_server;
-    public : 
+    public :
+        int         _content_fd;
+        ssize_t     _readStatus;
+        int         _status;
         Methods     methods;
         Response    response;
-        Client() {};
+        Client();
+        Client(const Client& other);
+        Client& operator=(const Client& other);
         const int&          GetSocketId( void ) const;
-        const Configuration&      getServer( void ) const;
+        const Configuration&      getServer() const;
         void    set_server(Configuration p);
         void    set_socket(int socket);
+        ~Client();
 };
