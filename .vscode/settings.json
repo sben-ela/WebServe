@@ -9,6 +9,7 @@
         "stdexcept": "cpp",
         "fstream": "cpp",
         "climits": "cpp",
-        "string": "cpp"
+        "string": "cpp",
+        "*.tcc": "cpp"
     }
 }

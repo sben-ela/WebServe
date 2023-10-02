@@ -6,7 +6,7 @@
 /*   By: sben-ela <sben-ela@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/04 13:11:31 by aybiouss          #+#    #+#             */
-/*   Updated: 2023/09/30 18:40:48 by sben-ela         ###   ########.fr       */
+/*   Updated: 2023/10/01 20:41:17 by sben-ela         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -194,12 +194,12 @@ int Servers::AllServers()
     {
         fd_set tmp_read = read_fds;
         fd_set tmp_write = write_fds;
- 
         int readySockets = select(maxFd + 1, &tmp_read, &tmp_write, NULL, NULL); // !
         // std::cout << "__________under Select__________" << std::endl;
         if (readySockets < 0)
         {
             perror("Error with select");
+            sleep(2);
             exit(EXIT_FAILURE);
         }
         for (std::map<int, Configuration>::iterator it = serverSockets.begin(); it != serverSockets.end(); it++)
@@ -237,36 +237,29 @@ int Servers::AllServers()
                 // std::string s(buffer, bytesRead);
                 if (bytesRead < 0)
                 {
-                    // perror("Error reading from socket");
-                    // close(its->GetSocketId());
-                    // if (its->GetSocketId() == maxFd)
-                    //     maxFd -= 1;
-                    // its = _client.erase(its);
-                    // its--;
-                    // FD_CLR(its->GetSocketId(), &read_fds);
+                    perror("Error reading from socket");
+                    close(its->GetSocketId());
+                    if (its->GetSocketId() == maxFd)
+                        maxFd -= 1;
+                    its = _client.erase(its);
+                    its--;
+                    FD_CLR(its->GetSocketId(), &read_fds);
                     continue;
                 }
                 else if (bytesRead == 0)
                 {
-                    // close(its->GetSocketId());
-                    // if (its->GetSocketId() == maxFd)
-                    //     maxFd -= 1;
-                    // FD_CLR(its->GetSocketId(), &read_fds);
-                    // its = _client.erase(its);
-                    // its--;
+                    close(its->GetSocketId());
+                    if (its->GetSocketId() == maxFd)
+                        maxFd -= 1;
+                    FD_CLR(its->GetSocketId(), &read_fds);
+                    its = _client.erase(its);
+                    its--;
                     continue;
                 }
                 else
                 {
                     std::string buf(buffer, bytesRead);
                     std::cout << "psps" << std::endl;
-                    // std::cout << buffer << std::endl;
-                    // std::cout << its->response.getMethod()<< std::endl;
-                    // std::cout << its->response.getPath() << std::endl;
-                    // std::cout << its->response.getHttpVersion() << std::endl;
-                    // FD_SET(its->GetSocketId(), &read_fds);
-                    // std::cout << "status : " << its->_status << std::endl;
-                    // std::cout << " PATH : " << its->response.getPath() << std::endl;
                     if (!its->response.parseHttpRequest(buf, its->GetSocketId(), bytesRead)) // la 9ra kolchi
                     {
                         FD_CLR(its->GetSocketId(), &read_fds);
@@ -275,43 +268,36 @@ int Servers::AllServers()
                 }
             }
         }
-        // for (std::vector<Client>::iterator its = _client.begin(); its != _client.end(); its++)
-        // {
-        //     // std::cout << "client size: " << _client.size() << std::endl;
-        //     if (FD_ISSET(its->GetSocketId(), &tmp_write))
-        //     {
-        //         std::cout << "\e[1;33mresponse sending [client socket: " << its->GetSocketId() << "]\e[0m" << std::endl;
-        //         its->_readStatus = 1;
-        //         std::cout << "PATH : " << its->response.getPath() << std::endl;
-        //         std::cout << " SERVER sattaus : " << its->_status << std::endl;
-        //         if (its->_status == 0)
-        //             ft_Response(*its);
-        //         else
-        //             ft_send(*its);
-        //         std::cout << "********************_readStatus  : " << its->_readStatus << std::endl;
-        //         if (its->_readStatus <= 0)
-        //         {
-        //             FD_CLR(its->GetSocketId(), &write_fds);
-        //             close(its->GetSocketId());
-        //             // FD_SET(its->GetSocketId(), &read_fds);
-        //             close(its->_content_fd);
-        //             if (maxFd == its->GetSocketId())
-        //                 maxFd -= 1;
-        //             std::cout << "client size: " << _client.size() << std::endl;
-        //             for (size_t i = 0; i < _client.size(); i++)
-        //                 std::cout << "client PATH : " << _client[i].response.getPath() << std::endl;
-        //             its = _client.erase(its);
-        //             its--;
-        //             std::cout << "client size: " << _client.size() << std::endl;
-        //         }
-        //         // std::cout << _client.size() << std::endl; // Erase the current element and move the iterator to the next
-        //         // const char *hello = "HTTP/1.1 200 OK\nContent-Type: text/plain\nContent-Length: 12\n\nHello world!";
-        //         // write(its->GetSocketId(), hello, strlen(hello));
-        //         // ! condition matbdlhom tatsali state = DONE
-        //         // FD_CLR(its->GetSocketId(), &);
-        //         // FD_SET(its->GetSocketId(), &read_fds);
-        //     }
-        // }
+        for (std::vector<Client>::iterator its = _client.begin(); its != _client.end(); its++)
+        {
+            if (FD_ISSET(its->GetSocketId(), &tmp_write))
+            {
+                std::cout << "\e[1;33mresponse sending [client socket: " << its->GetSocketId() << "]\e[0m" << std::endl;
+                its->_readStatus = 1;
+                std::cout << "|" << its->response.getMethod() << "|" << std::endl;
+                std::cout << "PATH : " << its->response.getPath() << std::endl;
+                std::cout << " SERVER sattaus : " << its->_status << std::endl;
+                if (its->_status == 0)
+                    ft_Response(*its);
+                else
+                    ft_send(*its);
+                std::cout << "********************_readStatus  : " << its->_readStatus << std::endl;
+                if (its->_readStatus <= 0)
+                {
+                    FD_CLR(its->GetSocketId(), &write_fds);
+                    close(its->GetSocketId());
+                    close(its->_content_fd);
+                    if (maxFd == its->GetSocketId())
+                        maxFd -= 1;
+                    std::cout << "client size: " << _client.size() << std::endl;
+                    for (size_t i = 0; i < _client.size(); i++)
+                        std::cout << "client PATH : " << _client[i].response.getPath() << std::endl;
+                    its = _client.erase(its);
+                    its--;
+                    std::cout << "client size: " << _client.size() << std::endl;
+                }
+            }
+        }
     }
     for (std::map<int, Configuration>::iterator it = serverSockets.begin(); it != serverSockets.end(); it++)
         close(it->first);

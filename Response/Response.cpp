@@ -6,7 +6,7 @@
 /*   By: sben-ela <sben-ela@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/17 11:36:51 by sben-ela          #+#    #+#             */
-/*   Updated: 2023/09/30 18:32:17 by sben-ela         ###   ########.fr       */
+/*   Updated: 2023/10/01 21:33:52 by sben-ela         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,7 +35,6 @@ size_t getLocationIndex(const Client& client)
 	index = client.getServer().getLocations().size() - 1;;
 	while (index > 0)
 	{
-        std::cout << "*****************************************" << std::endl;
 		if (client.getServer().getLocations()[index].getpattern() == client.response.getPath().substr(0, client.getServer().getLocations()[index].getpattern().size()))
 			return(index);
 		index--;
@@ -123,11 +122,13 @@ void    SendErrorPage(Client &client, int errorNumber)
         header = client.response.getHttpVersion() + client.response.getStatusCode()[errorNumber] + "\r\nContent-Length: " + ss.str() + "\r\nLocation: " + client.response.getPath() + "/" + "\r\n\r\n";
     else
         header = client.response.getHttpVersion() + client.response.getStatusCode()[errorNumber] + "\r\nContent-Length: " + ss.str() + "\r\n\r\n";
-    write(client.GetSocketId(), header.c_str(), header.size());
+    int bytes = write(client.GetSocketId(), header.c_str(), header.size());
+    if (bytes < 0)
+        throw(std::runtime_error(" write failed in sendErrorpage"));
     int rd = read(efd, buff, BUFFER_SIZE);
     buff[rd] = '\0';
     write(client.GetSocketId(), buff, BUFFER_SIZE);
-    client._readStatus = 0;
+    client._readStatus = -1;
 }
 
 const char *get_content_type(const char* path)
@@ -166,7 +167,6 @@ std::string getExtention(const std::string& filePath)
 
 void ft_send(Client& client)
 {
-    std::cout << "FT_SEND" << std::endl;
     char buff[BUFFER_SIZE];
 
     if ((client._readStatus = read(client._content_fd, buff, BUFFER_SIZE)) > 0)
@@ -174,9 +174,15 @@ void ft_send(Client& client)
         std::cout << "ID : " << client.GetSocketId() << std::endl;
         if (write(client.GetSocketId() , buff, BUFFER_SIZE) < 0)
         {
-            // client._readStatus = 0;
-            std::cout << "write Failed in Ft_Send()" << std::endl;
+            client._readStatus = -1;
+            perror("write in ft_send Faild ");
+            exit(1);
         }
+    }
+    if (client._readStatus < 0)
+    {
+        perror("read in ft_send Faild ");
+        exit(1);
     }
 }
 
@@ -190,7 +196,6 @@ void    Get(Client &client)
     int readBytes = 0;
     int bodyFd;
     int fd;
-
     memset(buff, 0, BUFFER_SIZE);
     if (client.response.GetFileExtention() == ".php" || client.response.GetFileExtention() == ".py")
     {
@@ -210,6 +215,7 @@ void    Get(Client &client)
             {
                 bodyFd = client.response.getFd();
                 dup2(bodyFd, 0);
+                close(bodyFd);
             }
             execve(Path[0], Path, 0); // ! env itzad
             std::cout << "ERRRRORRR" << std::endl;
@@ -260,7 +266,7 @@ void    DirectoryHasIndexFile(Client &client, const std::string& indexFile)
     if (file_exists(client.response.getPath())) // ! protect invalid index file
         Get(client);
     else
-        SendErrorPage(client, NOTFOUND); // ! khas throwa bach nthna mn les error 
+        SendErrorPage(client, NOTFOUND); 
 }
 
 /// @brief if the request is a directory 
@@ -278,11 +284,17 @@ void    handleDirectory(Client &client, const std::string& filePath)
             ss << test.size();
             std::string header = client.response.getHttpVersion() + " 200 OK\r\nContent-Type: "
                 + "text/html" + "\r\nContent-length: " + ss.str() + "\r\n\r\n";
-            write(client.GetSocketId(), header.c_str(), header.size());
-            write(client.GetSocketId(), test.c_str(), test.size());
-            client._readStatus = 0;
-            // client._status = 1;
-            throw(0);
+            if (write(client.GetSocketId(), header.c_str(), header.size()) < 0)
+            {
+                perror("write in handleDirectory Faild : ");
+                exit(13);
+            }
+            if (write(client.GetSocketId(), test.c_str(), test.size()) < 0)
+            {
+                perror("write in handleDirectory Faild : ");
+                exit(37);
+            }
+            client._readStatus = -1;
         }
         else
             SendErrorPage(client, FORBIDDEN);
@@ -291,6 +303,11 @@ void    handleDirectory(Client &client, const std::string& filePath)
         DirectoryHasIndexFile(client, client.getServer().getLocations()[locationIndex].getIndex());
     else if (!client.getServer().getIndex().empty())
         DirectoryHasIndexFile(client, client.getServer().getIndex());
+    else
+    {
+        std::cout << "Forbeddin\n";
+        SendErrorPage(client, FORBIDDEN);
+    }
 }
 
 /// @brief Initialize methods with their state
@@ -336,6 +353,7 @@ void    Delete_dir(const std::string& folderPath)
         }
         rmdir(folderPath.c_str());
     }
+    free(dir);
 }
 
 /// @brief DELETE method 
@@ -355,8 +373,10 @@ void    ft_delete(Client &client)
             checkIndexFile(client, client.getServer().getIndex(), targetPath);
     }
     else
+    {
         std::remove(targetPath.c_str());
-    
+    }
+    std::cout << " Target : " << targetPath << std::endl;
 }
 
 
@@ -364,10 +384,11 @@ void    ft_Response(Client &client)
 {
     try
     {
-        std::cout << "********************START-RESPONSE*******************" << std::endl;
-        if (client.response.getPath().empty())
-            exit(127);
+        std::cout << "********************START-RESPONSE  : " << "*******************" << std::endl;
         client.response.CreateStatusCode();
+        // std::cout << "Rs satatus : " << client.response.getResponseStatus() << std::endl;
+        // if (client.response.getResponseStatus() != 0)
+        //     SendErrorPage(client, client.response.getResponseStatus());
         std::string filePath = getFilePath(client).c_str();
         short index = getLocationIndex(client);
         initMethods(client.methods, client.getServer().getLocations()[index].getLimit_except());
@@ -378,37 +399,36 @@ void    ft_Response(Client &client)
         else if (client.response.getMethod() == "GET")
         {
             if (!client.methods._get)
-                throw(FORBIDDEN);
+                SendErrorPage(client, FORBIDDEN);
             if (isDirectory(filePath.c_str()))
                 handleDirectory(client, filePath);
             else
                 Get(client);
         }
         else if (client.response.getMethod() == "DELETE")
+        {
+            if (!client.methods._delete)
+                SendErrorPage(client, FORBIDDEN);
             ft_delete(client);
+        }
         else if (client.response.getMethod() == "POST")
         {
             if (!client.methods._post)
-                throw(FORBIDDEN);
+                SendErrorPage(client, FORBIDDEN);
             if (client.getServer().getLocations()[index].getUpload().empty())
-            {
-                client._readStatus = 0;
                 throw(std::runtime_error("empty upload path"));
-            }
             if (isDirectory(filePath.c_str()))
                 handleDirectory(client, filePath);
             else
                 Get(client);
+            // SendErrorPage(client, CREATED);
         }
     }
     catch(std::exception &e)
     {
+        client._readStatus = -1;
+        std::cout << "What...?" << std::endl;
         std::cout << e.what() << std::endl;
-    }
-    catch(int errorNumber)
-    {
-        if (errorNumber != 0)
-            SendErrorPage(client, errorNumber);
     }
     std::cout << "********************END-RESPONSE*******************" << std::endl;
 }

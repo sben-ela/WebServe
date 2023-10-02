@@ -6,14 +6,15 @@
 /*   By: sben-ela <sben-ela@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/05 09:27:53 by aybiouss          #+#    #+#             */
-/*   Updated: 2023/09/30 18:48:09 by sben-ela         ###   ########.fr       */
+/*   Updated: 2023/10/01 17:52:13 by sben-ela         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-
 #include "../Includes/Request.hpp"
 
-Request::Request() : _headers_done(false) {}
+Request::Request() : _headers_done(false){
+     _responseStatus = 0;
+}
 
 const int&  Request::getFd() const
 {
@@ -23,10 +24,7 @@ const int&  Request::getFd() const
 // Function to parse an HTTP request
 int Request::parseHttpRequest(std::string requestBuffer, int new_socket, size_t bytesread) {
     (void)new_socket;
-    int i = processChunk(requestBuffer, bytesread);
-    // if (!i)
-    //     return parseRequest();
-    return i;
+    return processChunk(requestBuffer, bytesread);
 }
 
 size_t Request::customFind(const std::vector<char>& vec, const std::string& str, size_t start)
@@ -89,11 +87,14 @@ int		Request::processChunk(std::string buffer, size_t bytesread)
             _header_before = _all.substr(0, done);
             _bodies = _all.substr(done + 4);
             _headers_done = true;
-            int j = parseHeaders();
-            if (!j)
+            if (!parseHeaders())
             {
                 _bodies.clear();
                 return 0;
+            }
+            for (std::map<std::string, std::string>::iterator it = _headers.begin(); it != _headers.end(); it++)
+            {
+                std::cout << it->first << " " << it->second << std::endl;
             }
         }
     }
@@ -105,21 +106,41 @@ int		Request::processChunk(std::string buffer, size_t bytesread)
     return 1;
 }
 
+std::string GenerateRandomString(int length) {
+    const char* Base = "ABCDEFJHIGKLMNOPQRSTUVWXYZabcdefh12326544";
+    std::string randomString;
+    for (int i = 0; i < length; i++) {
+        randomString += Base[rand() % strlen(Base)];
+    }
+    return randomString;
+}
+
+std::string GenerateTimestamp() {
+    time_t currentTime;
+    struct tm* localTimeInfo;
+    char timestamp[20];
+
+    time(&currentTime);
+    localTimeInfo = localtime(&currentTime);
+
+    strftime(timestamp, sizeof(timestamp), "%Y%m%d%H%M%S", localTimeInfo);
+
+    return timestamp;
+}
+
 std::string Request::GenerateFile() {
-    std::string Base = "ABCDEFJHIGKLMNOPQRSTUVWXYZabcdefh12326544";
-    std::string file;
-    
-    // Create the directory if it doesn't exist
+    std::string randomString = GenerateRandomString(6); // 6 characters for the filename
+    std::string timestamp = GenerateTimestamp();
+
     const char* dir_path = "/nfs/sgoinfre/goinfre/Perso/sben-ela/";
+
     if (mkdir(dir_path, 0777) != 0 && errno != EEXIST) {
         std::cerr << "Failed to create directory: " << strerror(errno) << std::endl;
         return "";  // Return an empty string to indicate failure
     }
-    
-    for (size_t i = 0; i < FILESIZE; i++) {
-        file += Base[rand() % Base.size()];
-    }
-    _ofile = dir_path + file;
+
+    std::string fileName = dir_path + timestamp + "_" + randomString;
+    _ofile = fileName;
     return _ofile;
 }
 
@@ -179,7 +200,7 @@ int    Request::processBody()
         if (!chunksize)
         {
             std::cout << "Body ended ..." << std::endl;
-            close(_fd);
+            // close(_fd); // !!!!
             return 0;
         }
         if (_bodies.length() >= chunksize + 2 + crlf_pos + 2)
@@ -187,7 +208,10 @@ int    Request::processBody()
             std::string str = _bodies.substr(crlf_pos + 2, chunksize);
             write(_fd, str.c_str(), chunksize);
             _bodies = _bodies.substr(chunksize + 2 + crlf_pos + 2);
+            if (_bodies == "0\r\n\r\n")
+                return 0;
         }
+
     }
     return 1;
 }
@@ -203,15 +227,26 @@ int    Request::parseHeaders()
     // Read the first line (request line)
     if (!std::getline(requestStream, line)) {
         // Handle an empty or incomplete request
-        setResponseStatus("400 Bad Request");
+        setResponseStatus(400);
         return 0;
     }
     std::istringstream requestLineStream(line);
     if (!(requestLineStream >> _method >> _path >> _httpVersion)) {
         // Handle invalid request line
-        setResponseStatus("400 Bad Request");
+        setResponseStatus(400);
         return 0;
     }
+    if (_path.length() > 2048)
+        setResponseStatus(414);
+    if (!_path.empty())
+    {
+        size_t found = _path.find("?");
+        if (found != std::string::npos) {
+            _path = _path.substr(0, found);  // Get the substring before the '?'
+            _queryString = _path.substr(found + 1);  // Get the substring after the '?'
+        }
+    }
+    // ! parse the path and change it
     //This splitting is achieved by using the >> operator, which is used to extract values from the input stream (requestLineStream in this case) based on whitespace (spaces or tabs) as the delimiter.
     if (_path == "/favicon.ico") {
         // Handle it as needed (status), or simply return an empty request
@@ -229,20 +264,36 @@ int    Request::parseHeaders()
             headerValue.erase(0, headerValue.find_first_not_of(" \t"));
             headerValue.erase(headerValue.find_last_not_of(" \t") + 1);
             _headers[headerName] = headerValue;
+            if (headerName == "Transfer-Encoding")
+                _transferEncoding = true;
+            if (headerName == "Content-Length")
+                _contentLength = true;
+            if (headerName == "Transfer-Encoding" && headerValue != "chunked")
+                _transferEncodingChunked = true;
         }
     }
-    if (_method == "GET")
+    if (_transferEncodingChunked)
+        setResponseStatus(501);
+    if (!_transferEncoding && !_contentLength && _method == "POST")
+        setResponseStatus(400);
+    if (_method == "GET" || _method == "DELETE")
     {
         close(_fd);
         return 0;
     }
-    else
+    else if (_method == "POST")
     {
         _fd = open(GenerateFile().c_str(), O_WRONLY | O_APPEND | O_CREAT, 0666);
+        std::cout << "File created with number : " << _fd << std::endl;
         if (_fd == -1) {
             std::cerr << "Failed to open the file." << std::endl;
             return 0;
         }
+    }
+    else
+    {
+        setResponseStatus(NOTIMPLEMENTED);
+        return 0;
     }
     return 1;
 }
@@ -255,6 +306,13 @@ std::string Request::vectorCharToString(const std::vector<char>& vec)
         result.push_back(vec[i]);
     }
     return result;
+}
+
+std::string     Request::getQueryString() const
+{
+    if (!_queryString.empty())
+        return _queryString;
+    return ("");
 }
 
 Request::Request(const Request& other)
@@ -272,6 +330,10 @@ Request::Request(const Request& other)
         _chunksize(other._chunksize),
         _bodies(other._bodies),
         _all(other._all),
+        _queryString(other._queryString),
+        _transferEncodingChunked(other._transferEncodingChunked),
+        _transferEncoding(other._transferEncoding),
+        _contentLength(other._contentLength),
         _headers_done(other._headers_done),
         _fd(other._fd) {}
 
@@ -293,6 +355,10 @@ Request& Request::operator=(const Request& other)
         _chunksize = other._chunksize;
         _bodies = other._bodies;
         _all = other._all;
+        _queryString = other._queryString;
+        _transferEncodingChunked = other._transferEncodingChunked;
+        _transferEncoding = other._transferEncoding;
+        _contentLength = other._contentLength;
         _headers_done = other._headers_done;
         _fd = other._fd;
     }
@@ -334,13 +400,13 @@ void                Request::setPath(std::string newPath)
     // Read the first line (request line)
     if (!std::getline(requestStream, line)) {
         // Handle an empty or incomplete request
-        setResponseStatus("400 Bad Request");
+        setResponseStatus(400);
         return 0;
     }
     std::istringstream requestLineStream(line);
     if (!(requestLineStream >> _method >> _path >> _httpVersion)) {
         // Handle invalid request line
-        setResponseStatus("400 Bad Request");
+        setResponseStatus(400);
         return 0;
     }
     //This splitting is achieved by using the >> operator, which is used to extract values from the input stream (requestLineStream in this case) based on whitespace (spaces or tabs) as the delimiter.
@@ -371,14 +437,14 @@ void                Request::setPath(std::string newPath)
 
                     if (parsedContentLength == ULONG_MAX) { endptr == headerValueCStr || *endptr != '\0' ||
                         // Handle invalid Content-Length value
-                        setResponseStatus("400 Bad Request");
+                        setResponseStatus(400);
                         return 0;
                     }
                     contentLength = parsedContentLength;
                     isContentLengthFound = true;
                 } catch (const std::exception& e) {
                     // Handle invalid Content-Length value
-                    setResponseStatus("400 Bad Request");
+                    setResponseStatus(400);
                     return 0;
                 }
             }
@@ -433,12 +499,12 @@ const std::string& Request::getHttpVersion() const
     return this->_httpVersion;
 }
 
-const std::string& Request::getResponseStatus() const
+int Request::getResponseStatus() const
 {
     return this->_responseStatus;
 }
 
-void Request::setResponseStatus(const std::string& status) {
+void Request::setResponseStatus(int status) {
     _responseStatus = status;
 }
 
@@ -637,14 +703,14 @@ Request::~Request() {}
 //     // Read the first line (request line)
 //     if (!std::getline(requestStream, line)) {
 //         // Handle an empty or incomplete request
-//         setResponseStatus("400 Bad Request");
+//         setResponseStatus(400);
 //         return 0;
 //     }
 //     std::istringstream requestLineStream(line);
 //     std::cout << "Line : " << line << std::endl;
 //     if (!(requestLineStream >> _method >> _path >> _httpVersion)) {
 //         // Handle invalid request line
-//         setResponseStatus("400 Bad Request");
+//         setResponseStatus(400);
 //         return 0;
 //     }
 //     //This splitting is achieved by using the >> operator, which is used to extract values from the input stream (requestLineStream in this case) based on whitespace (spaces or tabs) as the delimiter.
@@ -769,13 +835,13 @@ Request::~Request() {}
 //     // Read the first line (request line)
 //     if (!std::getline(requestStream, line)) {
 //         // Handle an empty or incomplete request
-//         setResponseStatus("400 Bad Request");
+//         setResponseStatus(400);
 //         return 0;
 //     }
 //     std::istringstream requestLineStream(line);
 //     if (!(requestLineStream >> _method >> _path >> _httpVersion)) {
 //         // Handle invalid request line
-//         setResponseStatus("400 Bad Request");
+//         setResponseStatus(400);
 //         return 0;
 //     }
 //     //This splitting is achieved by using the >> operator, which is used to extract values from the input stream (requestLineStream in this case) based on whitespace (spaces or tabs) as the delimiter.
@@ -806,14 +872,14 @@ Request::~Request() {}
 
 //                     if (parsedContentLength == ULONG_MAX) { endptr == headerValueCStr || *endptr != '\0' ||
 //                         // Handle invalid Content-Length value
-//                         setResponseStatus("400 Bad Request");
+//                         setResponseStatus(400);
 //                         return 0;
 //                     }
 //                     contentLength = parsedContentLength;
 //                     isContentLengthFound = true;
 //                 } catch (const std::exception& e) {
 //                     // Handle invalid Content-Length value
-//                     setResponseStatus("400 Bad Request");
+//                     setResponseStatus(400);
 //                     return 0;
 //                 }
 //             }

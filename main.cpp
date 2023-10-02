@@ -14,14 +14,17 @@
 #include "./Includes/Socket.hpp"
 //testing !!
 
-void sigpipeHandle(int sig) { if(sig) {}}
+void sig_handler(int sig) {
+    (void)sig;
+    exit(0);
+}
 
 int main(int argc, char *argv[])
 {
     if (argc == 1 || argc == 2) {
 		try 
 		{
-            signal(SIGPIPE, sigpipeHandle);
+            signal(SIGINT, sig_handler);
             Servers configFile;
             std::string		config;
             config = (argc == 1 ? "default.conf" : argv[1]);

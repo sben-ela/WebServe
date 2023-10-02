@@ -74,6 +74,7 @@ void   ft_Response(Client &client);
 void     sigintHandler(int signal);
 void    Delete_dir(const std::string& folderPath);
 void    ft_send(Client& client);
+void sig_handler(int sig);
 // ! new 
 // ? status Code
 #define FILESIZE 10
