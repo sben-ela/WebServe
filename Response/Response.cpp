@@ -6,7 +6,7 @@
 /*   By: sben-ela <sben-ela@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/17 11:36:51 by sben-ela          #+#    #+#             */
-/*   Updated: 2023/10/03 18:57:08 by sben-ela         ###   ########.fr       */
+/*   Updated: 2023/10/03 23:25:16 by sben-ela         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -168,7 +168,7 @@ std::string getExtention(const std::string& filePath)
 void ft_send(Client& client)
 {
     char buff[BUFFER_SIZE];
-
+    std::cout << "enter ft-send" << std::endl;
     std::cout << "target FD : " << client._content_fd << std::endl;
     if (!isOpen(client._content_fd))
     {
@@ -188,6 +188,7 @@ void ft_send(Client& client)
             // throw(0);
         }
     }
+    std::cout << "exit ft-send" << std::endl;
 }
 
 /// @brief GET method
@@ -406,6 +407,7 @@ void    ft_Response(Client &client)
                 handleDirectory(client, filePath);
             else
                 Get(client);
+            std::cout << " hllo dl;vkjkldhvlkdbv" << std::endl;
         }
         else if (client.response.getMethod() == "DELETE")
         {

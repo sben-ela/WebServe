@@ -6,7 +6,7 @@
 /*   By: sben-ela <sben-ela@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/04 13:11:31 by aybiouss          #+#    #+#             */
-/*   Updated: 2023/10/03 18:57:24 by sben-ela         ###   ########.fr       */
+/*   Updated: 2023/10/03 23:59:52 by sben-ela         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -201,9 +201,16 @@ int Servers::AllServers()
         fd_set tmp_read = read_fds;
         fd_set tmp_write = write_fds;
         int readySockets = select(maxFd + 1, &tmp_read, &tmp_write, NULL, NULL); // !
-        // std::cout << "__________under Select__________" << std::endl;
+        std::cout << "__________under Select__________" << std::endl;
         if (readySockets < 0)
         {
+            for (int fd = 0; fd <= maxFd; fd++)
+            {
+                if (FD_ISSET(fd, &tmp_read) || FD_ISSET(fd, &tmp_write))
+                {
+                    std::cerr << "Problematic FD: " << fd << std::endl;
+                }
+            }
             perror("Error with select");
             sleep(2);
             exit(EXIT_FAILURE);
@@ -282,51 +289,37 @@ int Servers::AllServers()
                 }
             }
         }
-        for (std::vector<Client>::iterator its = _client.begin(); its != _client.end(); its++)
+        for (std::vector<Client>::iterator its = _client.begin(); its != _client.end();)
         {
-            std::cout << "CLIENTS SIZE : " << _client.size() << std::endl;
             if (FD_ISSET(its->GetSocketId(), &tmp_write))
             {
-                its->_readStatus = 1;
-                std::cout << "Status : " << its->_status << "|" << std::endl;
+                std::cout << "1: SOCKET ID " << its->GetSocketId() << std::endl;
+                its->_readStatus = -2;
                 if (its->_status == 0)
-                {
                     ft_Response(*its);
-                    if (its->_readStatus <= 0)
-                    {
-                            std::cout << "/-----------------------/" << std::endl;
-
-                        FD_CLR(its->GetSocketId(), &write_fds);
-                        // FD_SET(its->GetSocketId(), &read_fds);
-                        close(its->GetSocketId());
-                        close(its->_content_fd);
-                        if (maxFd == its->GetSocketId())
-                            maxFd -= 1;
-                        its = _client.erase(its);
-                        its--;
-                        
-                    }
-                    std::cout << "=============================" << std::endl;
-                }
-                else if (its->_status == 1)
-                {
+                else
                     ft_send(*its);
-                    if (its->_readStatus <= 0)
-                    {
-                        std::cout << "??????????????" << std::endl;
-                        FD_CLR(its->GetSocketId(), &write_fds);
-                        // FD_SET(its->GetSocketId(), &read_fds);
-                        close(its->GetSocketId());
-                        close(its->_content_fd);
-                        if (maxFd == its->GetSocketId())
-                            maxFd -= 1;
-                        its = _client.erase(its);
-                        its--;
-                    }
-                    std::cout << "--------------------------" << std::endl;
+                if (its->_readStatus == -1 || its->_readStatus == 0)
+                {
+                    FD_CLR(its->GetSocketId(), &write_fds);
+                    close(its->GetSocketId());
+                    close(its->_content_fd);
+                    its->set_socket(-1);
+                    its->_content_fd = -1;
+            std::cout << "2: SOCKET ID " << its->GetSocketId() << std::endl;
+                    its = _client.erase(its);
                 }
             }
+            else
+                ++its;
         }
     }
     return 0;
 }
+// for (std::vector<Client>::iterator it = _client.begin(); it != _client.end(); it++)
+// {
+//     if (FD_ISSET(it->GetSocketId(), &tmp_write))
+//     {
+        
+//     }
+// }
