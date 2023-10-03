@@ -6,7 +6,7 @@
 /*   By: sben-ela <sben-ela@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/05 09:27:53 by aybiouss          #+#    #+#             */
-/*   Updated: 2023/10/01 17:52:13 by sben-ela         ###   ########.fr       */
+/*   Updated: 2023/10/03 18:01:36 by sben-ela         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -89,12 +89,12 @@ int		Request::processChunk(std::string buffer, size_t bytesread)
             _headers_done = true;
             if (!parseHeaders())
             {
+            // for (std::map<std::string, std::string>::iterator it = _headers.begin(); it != _headers.end(); it++)
+            // {
+            //     std::cout << it->first << " " << it->second << std::endl;
+            // }
                 _bodies.clear();
                 return 0;
-            }
-            for (std::map<std::string, std::string>::iterator it = _headers.begin(); it != _headers.end(); it++)
-            {
-                std::cout << it->first << " " << it->second << std::endl;
             }
         }
     }

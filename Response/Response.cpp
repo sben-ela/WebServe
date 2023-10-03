@@ -6,7 +6,7 @@
 /*   By: sben-ela <sben-ela@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/17 11:36:51 by sben-ela          #+#    #+#             */
-/*   Updated: 2023/10/01 21:33:52 by sben-ela         ###   ########.fr       */
+/*   Updated: 2023/10/03 18:57:08 by sben-ela         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -169,20 +169,24 @@ void ft_send(Client& client)
 {
     char buff[BUFFER_SIZE];
 
-    if ((client._readStatus = read(client._content_fd, buff, BUFFER_SIZE)) > 0)
+    std::cout << "target FD : " << client._content_fd << std::endl;
+    if (!isOpen(client._content_fd))
     {
-        std::cout << "ID : " << client.GetSocketId() << std::endl;
-        if (write(client.GetSocketId() , buff, BUFFER_SIZE) < 0)
+        std::cout << " the file fd is closed : " << client._content_fd << std::endl;
+        client._readStatus = -1;
+    }
+    if (!isOpen(client.GetSocketId()))
+    {
+        std::cout << " the socket fd is closed : " << client.GetSocketId() << std::endl;
+        client._readStatus = -1;
+    }
+    if ((client._readStatus = read(client._content_fd, buff, BUFFER_SIZE)) >= 0)
+    {
+        if (client._readStatus != 0 && write(client.GetSocketId(), buff, BUFFER_SIZE) < 0)
         {
             client._readStatus = -1;
-            perror("write in ft_send Faild ");
-            exit(1);
+            // throw(0);
         }
-    }
-    if (client._readStatus < 0)
-    {
-        perror("read in ft_send Faild ");
-        exit(1);
     }
 }
 
@@ -243,14 +247,14 @@ void    Get(Client &client)
     client._status = 1;
 }
 
-bool file_exists(const std::string &filename)
+bool    file_exists(const std::string &filename)
 {
     struct stat buffer;
 
     return(stat(filename.c_str(), &buffer) == 0);
 }
 
-bool isDirectory(const char* path) {
+bool    isDirectory(const char* path) {
     struct stat fileInfo;
 
     if (stat(path, &fileInfo) != 0)
@@ -286,13 +290,13 @@ void    handleDirectory(Client &client, const std::string& filePath)
                 + "text/html" + "\r\nContent-length: " + ss.str() + "\r\n\r\n";
             if (write(client.GetSocketId(), header.c_str(), header.size()) < 0)
             {
-                perror("write in handleDirectory Faild : ");
-                exit(13);
+                client._readStatus = -1;
+                // throw(0);
             }
             if (write(client.GetSocketId(), test.c_str(), test.size()) < 0)
             {
-                perror("write in handleDirectory Faild : ");
-                exit(37);
+                client._readStatus = -1;
+                // throw(0);
             }
             client._readStatus = -1;
         }
@@ -304,10 +308,7 @@ void    handleDirectory(Client &client, const std::string& filePath)
     else if (!client.getServer().getIndex().empty())
         DirectoryHasIndexFile(client, client.getServer().getIndex());
     else
-    {
-        std::cout << "Forbeddin\n";
         SendErrorPage(client, FORBIDDEN);
-    }
 }
 
 /// @brief Initialize methods with their state
@@ -384,6 +385,7 @@ void    ft_Response(Client &client)
 {
     try
     {
+        signal(SIGPIPE, SIG_IGN);
         std::cout << "********************START-RESPONSE  : " << "*******************" << std::endl;
         client.response.CreateStatusCode();
         // std::cout << "Rs satatus : " << client.response.getResponseStatus() << std::endl;
@@ -427,8 +429,24 @@ void    ft_Response(Client &client)
     catch(std::exception &e)
     {
         client._readStatus = -1;
-        std::cout << "What...?" << std::endl;
         std::cout << e.what() << std::endl;
+    } 
+    catch(const int e)
+    {
+        std::cout << e << std::endl;
     }
     std::cout << "********************END-RESPONSE*******************" << std::endl;
 }
+
+bool isOpen(int fd)
+{
+    struct stat buff;
+    if (fstat(fd, &buff) == -1)
+    {
+        std::cout << "invalid Fd " << std::endl;
+        return (false);
+    }
+    std::cout << "valid Fd " << std::endl;;
+    return(true);
+}
+// ! add the extention to the file in POST
