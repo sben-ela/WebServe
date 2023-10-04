@@ -6,7 +6,7 @@
 /*   By: sben-ela <sben-ela@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/17 11:36:51 by sben-ela          #+#    #+#             */
-/*   Updated: 2023/10/03 23:25:16 by sben-ela         ###   ########.fr       */
+/*   Updated: 2023/10/04 13:40:11 by sben-ela         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -407,7 +407,6 @@ void    ft_Response(Client &client)
                 handleDirectory(client, filePath);
             else
                 Get(client);
-            std::cout << " hllo dl;vkjkldhvlkdbv" << std::endl;
         }
         else if (client.response.getMethod() == "DELETE")
         {

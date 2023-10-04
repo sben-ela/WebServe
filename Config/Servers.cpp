@@ -6,7 +6,7 @@
 /*   By: sben-ela <sben-ela@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/04 13:11:31 by aybiouss          #+#    #+#             */
-/*   Updated: 2023/10/03 23:59:52 by sben-ela         ###   ########.fr       */
+/*   Updated: 2023/10/04 13:42:56 by sben-ela         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -204,16 +204,17 @@ int Servers::AllServers()
         std::cout << "__________under Select__________" << std::endl;
         if (readySockets < 0)
         {
-            for (int fd = 0; fd <= maxFd; fd++)
-            {
-                if (FD_ISSET(fd, &tmp_read) || FD_ISSET(fd, &tmp_write))
-                {
-                    std::cerr << "Problematic FD: " << fd << std::endl;
-                }
-            }
-            perror("Error with select");
-            sleep(2);
-            exit(EXIT_FAILURE);
+            // for (int fd = 0; fd <= maxFd; fd++)
+            // {
+            //     if (FD_ISSET(fd, &tmp_read) || FD_ISSET(fd, &tmp_write))
+            //     {
+            //         std::cerr << "Problematic FD: " << fd << std::endl;
+            //     }
+            // }
+            // perror("Error with select");
+            // sleep(2);
+            // exit(EXIT_FAILURE);
+            continue;
         }
         for (std::map<int, Configuration>::iterator it = serverSockets.begin(); it != serverSockets.end(); it++)
         {
@@ -306,7 +307,7 @@ int Servers::AllServers()
                     close(its->_content_fd);
                     its->set_socket(-1);
                     its->_content_fd = -1;
-            std::cout << "2: SOCKET ID " << its->GetSocketId() << std::endl;
+                    std::cout << "2: SOCKET ID " << its->GetSocketId() << std::endl;
                     its = _client.erase(its);
                 }
             }
