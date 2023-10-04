@@ -6,7 +6,7 @@
 /*   By: sben-ela <sben-ela@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/05 09:27:53 by aybiouss          #+#    #+#             */
-/*   Updated: 2023/10/03 18:01:36 by sben-ela         ###   ########.fr       */
+/*   Updated: 2023/10/04 15:02:04 by sben-ela         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -388,6 +388,10 @@ void                Request::setPath(std::string newPath)
 {
     _path = newPath;
 }
+
+
+
+        
 /*int Request::parseRequest()
 {
     // std::cout << "----------------+++++++++++++++++++++++++++" << std::endl;

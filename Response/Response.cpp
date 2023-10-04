@@ -6,7 +6,7 @@
 /*   By: sben-ela <sben-ela@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/17 11:36:51 by sben-ela          #+#    #+#             */
-/*   Updated: 2023/10/04 13:40:11 by sben-ela         ###   ########.fr       */
+/*   Updated: 2023/10/04 22:53:29 by sben-ela         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,18 +28,20 @@ std::string GenerateFile( void )
     return("/tmp/" +  file);
 }
 
-size_t getLocationIndex(const Client& client)
+void    Client::initLocationIndex( void )
 {
-    size_t index;
-
-	index = client.getServer().getLocations().size() - 1;;
-	while (index > 0)
+	_locationIndex = _client_server.getLocations().size() - 1;;
+	while (_locationIndex > 0)
 	{
-		if (client.getServer().getLocations()[index].getpattern() == client.response.getPath().substr(0, client.getServer().getLocations()[index].getpattern().size()))
-			return(index);
-		index--;
-	}
-	return(0);
+		if (_client_server.getLocations()[_locationIndex].getpattern() == response.getPath().substr(0, _client_server.getLocations()[_locationIndex].getpattern().size()))
+            break;
+		_locationIndex--;
+    }
+}
+
+size_t Client::getLocationIndex( void )
+{
+    return(_locationIndex);
 }
 
 std::string GenerateDirectoryListing(const std::string& directoryPath) {
@@ -94,67 +96,41 @@ std::string getFileName(const std::string& path, size_t first)
 }
 
 /// @brief join root with the requested path 
-std::string     getFilePath(const Client& client)
+std::string     Client::getFilePath( void )
 {
     std::string filePath;
 	size_t index;
 
-	index = getLocationIndex(client);
+	index = getLocationIndex();
         
-	filePath = client.getServer().getRoot() + getFileName(client.response.getPath()
-	, client.getServer().getLocations()[index].getpattern().size());
+	filePath = getServer().getRoot() + getFileName(response.getPath()
+	, getServer().getLocations()[index].getpattern().size());
 	return (filePath);
 }
 
-void    SendErrorPage(Client &client, int errorNumber)
+void    Client::SendErrorPage(int errorNumber)
 {
     std::stringstream ss;
     struct stat statbuffer;
     char buff[BUFFER_SIZE];
     std::string header;
 
-    int efd = open(client.getServer().getErrorPages()[errorNumber].c_str(), O_RDONLY);
+    int efd = open(getServer().getErrorPages()[errorNumber].c_str(), O_RDONLY);
     if (efd < 0)
         throw(std::runtime_error("Invalid Error page !"));
     fstat(efd, &statbuffer);
     ss << statbuffer.st_size;
     if (errorNumber == MOVEDPERMANENTLY)
-        header = client.response.getHttpVersion() + client.response.getStatusCode()[errorNumber] + "\r\nContent-Length: " + ss.str() + "\r\nLocation: " + client.response.getPath() + "/" + "\r\n\r\n";
+        header = response.getHttpVersion() + response.getStatusCode()[errorNumber] + "\r\nContent-Length: " + ss.str() + "\r\nLocation: " + response.getPath() + "/" + "\r\n\r\n";
     else
-        header = client.response.getHttpVersion() + client.response.getStatusCode()[errorNumber] + "\r\nContent-Length: " + ss.str() + "\r\n\r\n";
-    int bytes = write(client.GetSocketId(), header.c_str(), header.size());
+        header = response.getHttpVersion() + response.getStatusCode()[errorNumber] + "\r\nContent-Length: " + ss.str() + "\r\n\r\n";
+    int bytes = write(GetSocketId(), header.c_str(), header.size());
     if (bytes < 0)
         throw(std::runtime_error(" write failed in sendErrorpage"));
     int rd = read(efd, buff, BUFFER_SIZE);
     buff[rd] = '\0';
-    write(client.GetSocketId(), buff, BUFFER_SIZE);
-    client._readStatus = -1;
-}
-
-const char *get_content_type(const char* path)
-{
-    const char *last_dot = strrchr(path, '.');
-    if (last_dot)
-    {
-        if (strcmp(last_dot, ".css") == 0) return "text/css";
-        if (strcmp(last_dot, ".csv") == 0) return "text/csv";
-        if (strcmp(last_dot, ".gif") == 0) return "image/gif";
-        if (strcmp(last_dot, ".htm") == 0) return "text/html";
-        if (strcmp(last_dot, ".html") == 0) return "text/html";
-        if (strcmp(last_dot, ".ico") == 0) return "image/x-icon";
-        if (strcmp(last_dot, ".jpeg") == 0) return "image/jpeg";
-        if (strcmp(last_dot, ".mp4") == 0) return "video/mp4";
-        if (strcmp(last_dot, ".jpg") == 0) return "image/jpeg";
-        if (strcmp(last_dot, ".js") == 0) return "application/javascript";
-        if (strcmp(last_dot, ".json") == 0) return "application/json";
-        if (strcmp(last_dot, ".png") == 0) return "image/png";
-        if (strcmp(last_dot, ".pdf") == 0) return "application/pdf";
-        if (strcmp(last_dot, ".svg") == 0) return "image/svg+xml";
-        if (strcmp(last_dot, ".txt") == 0) return "text/plain";
-        if (strcmp(last_dot, ".py") == 0) return "text/plain";
-        if (strcmp(last_dot, ".php") == 0) return "text/plain";
-    }
-    return ("text/plain");
+    write(GetSocketId(), buff, BUFFER_SIZE);
+    _readStatus = -1;
 }
 
 std::string getExtention(const std::string& filePath)
@@ -182,17 +158,20 @@ void ft_send(Client& client)
     }
     if ((client._readStatus = read(client._content_fd, buff, BUFFER_SIZE)) >= 0)
     {
-        if (client._readStatus != 0 && write(client.GetSocketId(), buff, BUFFER_SIZE) < 0)
+        std::cout << "++++ Read +++" << std::endl;
+        if (write(client.GetSocketId(), buff, BUFFER_SIZE) < 0)
         {
+            std::cout << "++++ Write +++" << std::endl;
             client._readStatus = -1;
             // throw(0);
         }
+        std::cout << "------- Read ----------" << std::endl;
     }
     std::cout << "exit ft-send" << std::endl;
 }
 
 /// @brief GET method
-void    Get(Client &client)
+void    Client::Reply( void )
 {
     char buff[BUFFER_SIZE];
     std::string header;
@@ -202,27 +181,27 @@ void    Get(Client &client)
     int bodyFd;
     int fd;
     memset(buff, 0, BUFFER_SIZE);
-    if (client.response.GetFileExtention() == ".php" || client.response.GetFileExtention() == ".py")
+    if (response.GetFileExtention() == ".php" || response.GetFileExtention() == ".py")
     {
         std::string outfile = GenerateFile();
         int pid  = fork();
         if (!pid)
         {
-            std::map<std::string, std::string> intrepreter = client.getServer().getCgi();
-            std::string filePath  = getFilePath(client);
-            char *Path[3] = {(char*)intrepreter[client.response.GetFileExtention()].c_str(), (char *)filePath.c_str(), NULL};
+            std::map<std::string, std::string> intrepreter = getServer().getCgi();
+            std::string filePath  = getFilePath().c_str();
+            char *Path[3] = {(char*)intrepreter[response.GetFileExtention()].c_str(), (char *)filePath.c_str(), NULL};
             fd = open (outfile.c_str(), O_CREAT | O_RDWR | O_TRUNC, 0666);
             if (fd < 0)
                 throw(std::runtime_error("Open Failed"));
             dup2(fd, 1);
             close(fd);
-            if (client.response.getMethod() == "POST")
+            if (response.getMethod() == "POST")
             {
-                bodyFd = client.response.getFd();
+                bodyFd = response.getFd();
                 dup2(bodyFd, 0);
                 close(bodyFd);
             }
-            execve(Path[0], Path, 0); // ! env itzad
+            execve(Path[0], Path, 0);// ! ENV
             std::cout << "ERRRRORRR" << std::endl;
             exit(EXFIALE);
         }
@@ -230,22 +209,22 @@ void    Get(Client &client)
         fd = open (outfile.c_str(), O_CREAT | O_RDWR , 0777);
         if (fd < 0)
             throw(std::runtime_error("Open Failed  in GET-CGI "));
-        if (client.response.GetFileExtention() == ".php")
-            readBytes = read(fd, buff, 42);
+        if (response.GetFileExtention() == ".php")
+            readBytes = read(fd, buff, HEADER_SIZE);
     }
     else
     {
-        fd = open (getFilePath(client).c_str(), O_RDONLY);
+        fd = open (getFilePath().c_str(), O_RDONLY);
         if (fd < 0)
             throw(std::runtime_error("Open Failed in GgI"));
     }
     fstat(fd, &statbuffer);
     ss << statbuffer.st_size - readBytes;
-    header = client.response.getHttpVersion() + " 200 OK\r\nContent-Type: "
-    + get_content_type(client.response.getPath().c_str()) + "\r\nContent-Length: " + ss.str() + "\r\n\r\n";
-    send(client.GetSocketId(), header.c_str(), header.size(), 0);
-    client._content_fd = fd;
-    client._status = 1;
+    header = response.getHttpVersion() + " 200 OK\r\nContent-Type: "
+    + get_content_type() + "\r\nContent-Length: " + ss.str() + "\r\n\r\n";
+    send(GetSocketId(), header.c_str(), header.size(), 0);
+    _content_fd = fd;
+    _status = 1;
 }
 
 bool    file_exists(const std::string &filename)
@@ -265,51 +244,44 @@ bool    isDirectory(const char* path) {
 }
 
 
-void    DirectoryHasIndexFile(Client &client, const std::string& indexFile)
+void    Client::DirectoryHasIndexFile(const std::string& indexFile)
 {
-    client.response.setPath(client.response.getPath() + indexFile);
-    if (file_exists(client.response.getPath())) // ! protect invalid index file
-        Get(client);
+    response.setPath(response.getPath() + indexFile);
+    if (file_exists(response.getPath())) // ! protect invalid index file
+        Reply();
     else
-        SendErrorPage(client, NOTFOUND); 
+        SendErrorPage(NOTFOUND); 
 }
 
 /// @brief if the request is a directory 
-void    handleDirectory(Client &client, const std::string& filePath)
+void    Client::handleDirectory(const std::string& filePath)
 {
-    size_t locationIndex = getLocationIndex(client);
+    size_t locationIndex = getLocationIndex();
     if (filePath[filePath.size() - 1] != '/')
-        SendErrorPage(client, MOVEDPERMANENTLY);
-    if (client.response.getMethod() == "GET" && client.getServer().getLocations()[locationIndex].getIndex().empty() && client.getServer().getIndex().empty())
+        SendErrorPage(MOVEDPERMANENTLY);
+    if (response.getMethod() == "GET" && getServer().getLocations()[locationIndex].getIndex().empty() && getServer().getIndex().empty())
     {
-        if (client.getServer().getLocations()[locationIndex].getAutoIndex())
+        if (getServer().getLocations()[locationIndex].getAutoIndex())
         {
             std::stringstream ss;
             std::string test = GenerateDirectoryListing(filePath);
             ss << test.size();
-            std::string header = client.response.getHttpVersion() + " 200 OK\r\nContent-Type: "
+            std::string header = response.getHttpVersion() + " 200 OK\r\nContent-Type: "
                 + "text/html" + "\r\nContent-length: " + ss.str() + "\r\n\r\n";
-            if (write(client.GetSocketId(), header.c_str(), header.size()) < 0)
-            {
-                client._readStatus = -1;
-                // throw(0);
-            }
-            if (write(client.GetSocketId(), test.c_str(), test.size()) < 0)
-            {
-                client._readStatus = -1;
-                // throw(0);
-            }
-            client._readStatus = -1;
+            if (write(GetSocketId(), header.c_str(), header.size()) < 0)
+                _readStatus = -1;
+            if (write(GetSocketId(), test.c_str(), test.size()) < 0)
+                _readStatus = -1;
         }
         else
-            SendErrorPage(client, FORBIDDEN);
+            SendErrorPage(FORBIDDEN);
     }
-    else if (!client.getServer().getLocations()[locationIndex].getIndex().empty())
-        DirectoryHasIndexFile(client, client.getServer().getLocations()[locationIndex].getIndex());
-    else if (!client.getServer().getIndex().empty())
-        DirectoryHasIndexFile(client, client.getServer().getIndex());
+    else if (!getServer().getLocations()[locationIndex].getIndex().empty())
+        DirectoryHasIndexFile(getServer().getLocations()[locationIndex].getIndex());
+    else if (!getServer().getIndex().empty())
+        DirectoryHasIndexFile(getServer().getIndex());
     else
-        SendErrorPage(client, FORBIDDEN);
+        SendErrorPage(FORBIDDEN);
 }
 
 /// @brief Initialize methods with their state
@@ -326,12 +298,12 @@ void initMethods(Methods& methods, std::vector<std::string> allowMethods)
     }
 }
 
-void    checkIndexFile(Client client, const std::string& indexFile, const std::string& targetPath)
+void    Client::checkIndexFile(const std::string& indexFile, const std::string& targetPath)
 {
     if (getExtention(indexFile) != ".php" && getExtention(indexFile) != ".py")
         Delete_dir(targetPath);
     else
-        DirectoryHasIndexFile(client, indexFile);
+        DirectoryHasIndexFile(indexFile);
 }
 
 /// @brief delete directory
@@ -359,77 +331,79 @@ void    Delete_dir(const std::string& folderPath)
 }
 
 /// @brief DELETE method 
-void    ft_delete(Client &client)
+void    Client::ft_delete( void )
 {
-    std::string targetPath = getFilePath(client);
-    size_t locationIndex = getLocationIndex(client);
+    std::string targetPath = getFilePath().c_str();
+    size_t locationIndex = getLocationIndex();
     if (isDirectory(targetPath.c_str()))
     {
         if (targetPath[targetPath.size() - 1] != '/')
-            SendErrorPage(client, CONFLICT);
-        else if(client.getServer().getLocations()[locationIndex].getIndex().empty() && client.getServer().getIndex().empty())
+            SendErrorPage(CONFLICT);
+        else if(getServer().getLocations()[locationIndex].getIndex().empty() && getServer().getIndex().empty())
             Delete_dir(targetPath);
-        else if (!client.getServer().getLocations()[locationIndex].getIndex().empty())
-            checkIndexFile(client, client.getServer().getLocations()[locationIndex].getIndex(), targetPath);
-        else if (!client.getServer().getIndex().empty())
-            checkIndexFile(client, client.getServer().getIndex(), targetPath);
+        else if (!getServer().getLocations()[locationIndex].getIndex().empty())
+            checkIndexFile(getServer().getLocations()[locationIndex].getIndex(), targetPath);
+        else if (!getServer().getIndex().empty())
+            checkIndexFile(getServer().getIndex(), targetPath);
     }
     else
-    {
         std::remove(targetPath.c_str());
-    }
-    std::cout << " Target : " << targetPath << std::endl;
 }
 
-
-void    ft_Response(Client &client)
+void    Client::ft_Response( void )
 {
     try
     {
         signal(SIGPIPE, SIG_IGN);
+        static int i = 0;
         std::cout << "********************START-RESPONSE  : " << "*******************" << std::endl;
-        client.response.CreateStatusCode();
-        // std::cout << "Rs satatus : " << client.response.getResponseStatus() << std::endl;
-        // if (client.response.getResponseStatus() != 0)
-        //     SendErrorPage(client, client.response.getResponseStatus());
-        std::string filePath = getFilePath(client).c_str();
-        short index = getLocationIndex(client);
-        initMethods(client.methods, client.getServer().getLocations()[index].getLimit_except());
+        response.CreateStatusCode();
+        // std::cout << "Rs satatus : " << response.getResponseStatus() << std::endl;
+        // if (response.getResponseStatus() != 0)
+        //     SendErrorPage(response.getResponseStatus());
+        initLocationIndex();
+        std::string filePath = getFilePath().c_str();
+        short index = getLocationIndex();
+        initMethods(methods, getServer().getLocations()[index].getLimit_except());
         if (access(filePath.c_str(), F_OK))
-            SendErrorPage(client, NOTFOUND);
+            SendErrorPage(NOTFOUND);
         else if (access(filePath.c_str(), R_OK))
-            SendErrorPage(client, FORBIDDEN);
-        else if (client.response.getMethod() == "GET")
+            SendErrorPage(FORBIDDEN);
+        else if (response.getMethod() == "GET")
         {
-            if (!client.methods._get)
-                SendErrorPage(client, FORBIDDEN);
+            std::cout << "------------------------------------- " << i++ << "---------------------------------------------" << std::endl;
+            // sleep(1);
+            if (!methods._get)
+                SendErrorPage(FORBIDDEN);
             if (isDirectory(filePath.c_str()))
-                handleDirectory(client, filePath);
+                handleDirectory(filePath);
             else
-                Get(client);
+                Reply();
         }
-        else if (client.response.getMethod() == "DELETE")
+        else if (response.getMethod() == "DELETE")
         {
-            if (!client.methods._delete)
-                SendErrorPage(client, FORBIDDEN);
-            ft_delete(client);
+            if (!methods._delete)
+                SendErrorPage(FORBIDDEN);
+            ft_delete();
         }
-        else if (client.response.getMethod() == "POST")
+        else if (response.getMethod() == "POST")
         {
-            if (!client.methods._post)
-                SendErrorPage(client, FORBIDDEN);
-            if (client.getServer().getLocations()[index].getUpload().empty())
+            if (!methods._post)
+                SendErrorPage(FORBIDDEN);
+            if (getServer().getLocations()[index].getUpload().empty())
                 throw(std::runtime_error("empty upload path"));
             if (isDirectory(filePath.c_str()))
-                handleDirectory(client, filePath);
+                handleDirectory(filePath);
             else
-                Get(client);
-            // SendErrorPage(client, CREATED);
+                Reply();
+            // SendErrorPage(CREATED);
         }
+        else 
+            _readStatus = -1;
     }
     catch(std::exception &e)
     {
-        client._readStatus = -1;
+        _readStatus = -1;
         std::cout << e.what() << std::endl;
     } 
     catch(const int e)
@@ -450,4 +424,5 @@ bool isOpen(int fd)
     std::cout << "valid Fd " << std::endl;;
     return(true);
 }
-// ! add the extention to the file in POST
+
+/// ! write kathangi f ft_send

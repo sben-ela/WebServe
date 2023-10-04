@@ -6,7 +6,7 @@
 /*   By: sben-ela <sben-ela@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/20 13:32:21 by aybiouss          #+#    #+#             */
-/*   Updated: 2023/10/01 19:49:07 by sben-ela         ###   ########.fr       */
+/*   Updated: 2023/10/04 18:22:48 by sben-ela         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -56,6 +56,63 @@ Client& Client::operator=(const Client& other)
 const Configuration&      Client::getServer( void ) const
 {
     return (_client_server);
+}
+
+void    Client::fullMapEnv()
+{
+    _mapEnv["REQUEST_METHOD"] = this->response.getMethod();
+    _mapEnv["CONTENT_TYPE"] = this->get_content_type();
+    _mapEnv["QUERY_STRING"] = this->response.getQueryString();
+    _mapEnv["PATH_INFO"] = this->response.getPath();    
+}
+
+void    Client::fullEnv()
+{
+    fullMapEnv();
+    std::cout << _mapEnv.size() << std::endl;
+    _env = new char*[_mapEnv.size() + 1];
+    size_t i = 0;
+    for (std::map<std::string, std::string>::iterator it = _mapEnv.begin(); it != _mapEnv.end();)
+    {
+        _env[i] = strdup((char *)(it->first + "=" + it->second).c_str());
+        std::cout << "ENV : " << _env[i] << std::endl;
+        it++;
+        i++;
+    }
+    _env[i] = 0;
+}
+
+void    Client::deleteEnv()
+{
+    for (size_t i = 0; _env[i]; i++)
+        free(_env[i]);
+    delete [] _env;
+}
+
+const char* Client::get_content_type( void )
+{
+    const char *last_dot = strrchr(response.getPath().c_str(), '.');
+    if (last_dot)
+    {
+        if (strcmp(last_dot, ".css") == 0) return "text/css";
+        if (strcmp(last_dot, ".csv") == 0) return "text/csv";
+        if (strcmp(last_dot, ".gif") == 0) return "image/gif";
+        if (strcmp(last_dot, ".htm") == 0) return "text/html";
+        if (strcmp(last_dot, ".html") == 0) return "text/html";
+        if (strcmp(last_dot, ".ico") == 0) return "image/x-icon";
+        if (strcmp(last_dot, ".jpeg") == 0) return "image/jpeg";
+        if (strcmp(last_dot, ".mp4") == 0) return "video/mp4";
+        if (strcmp(last_dot, ".jpg") == 0) return "image/jpeg";
+        if (strcmp(last_dot, ".js") == 0) return "application/javascript";
+        if (strcmp(last_dot, ".json") == 0) return "application/json";
+        if (strcmp(last_dot, ".png") == 0) return "image/png";
+        if (strcmp(last_dot, ".pdf") == 0) return "application/pdf";
+        if (strcmp(last_dot, ".svg") == 0) return "image/svg+xml";
+        if (strcmp(last_dot, ".txt") == 0) return "text/plain";
+        if (strcmp(last_dot, ".py") == 0) return "text/plain";
+        if (strcmp(last_dot, ".php") == 0) return "text/plain";
+    }
+    return ("text/plain");
 }
 
 Client::~Client() {}

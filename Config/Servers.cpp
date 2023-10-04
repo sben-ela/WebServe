@@ -6,7 +6,7 @@
 /*   By: sben-ela <sben-ela@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/04 13:11:31 by aybiouss          #+#    #+#             */
-/*   Updated: 2023/10/04 13:42:56 by sben-ela         ###   ########.fr       */
+/*   Updated: 2023/10/04 22:51:07 by sben-ela         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -204,13 +204,23 @@ int Servers::AllServers()
         std::cout << "__________under Select__________" << std::endl;
         if (readySockets < 0)
         {
-            // for (int fd = 0; fd <= maxFd; fd++)
-            // {
-            //     if (FD_ISSET(fd, &tmp_read) || FD_ISSET(fd, &tmp_write))
-            //     {
-            //         std::cerr << "Problematic FD: " << fd << std::endl;
-            //     }
-            // }
+            for (int fd = 0; fd <= maxFd; fd++)
+            {
+                if (FD_ISSET(fd, &tmp_read) || FD_ISSET(fd, &tmp_write))
+                {
+                    if (!isOpen(fd) || fd ==0)
+                    {
+                        std::cout << "Closed Fd" << std::endl;
+                        sleep(1);
+                        // exit(1);
+                        if (FD_ISSET(fd, &tmp_read))
+                            FD_CLR(fd, &tmp_read);
+                        else
+                            FD_CLR(fd, &write_fds);
+                    }
+                    std::cerr << "Problematic FD: " << fd << std::endl;
+                }
+            }
             // perror("Error with select");
             // sleep(2);
             // exit(EXIT_FAILURE);
@@ -297,7 +307,7 @@ int Servers::AllServers()
                 std::cout << "1: SOCKET ID " << its->GetSocketId() << std::endl;
                 its->_readStatus = -2;
                 if (its->_status == 0)
-                    ft_Response(*its);
+                    its->ft_Response();
                 else
                     ft_send(*its);
                 if (its->_readStatus == -1 || its->_readStatus == 0)

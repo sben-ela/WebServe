@@ -6,7 +6,7 @@
 /*   By: sben-ela <sben-ela@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/04 17:07:10 by aybiouss          #+#    #+#             */
-/*   Updated: 2023/10/01 17:00:25 by sben-ela         ###   ########.fr       */
+/*   Updated: 2023/10/04 15:03:09 by sben-ela         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,6 +37,7 @@ class Request
         bool        _contentLength;
         bool        _headers_done;
         int         _fd;
+
     public:
         Request();
         Request(const Request& other);
@@ -61,9 +62,7 @@ class Request
         int             countNumbersInString(const std::string& inputString);
         std::string     vectorCharToString(const std::vector<char>& vec);
         std::vector<char> customSubstr(const std::vector<char>& vec, size_t start, size_t length);
-        // ! NEW
         std::map<int, std::string> getStatusCode( void ) const;
         void                CreateStatusCode( void );
-        // !
         ~Request();
 };
