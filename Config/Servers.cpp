@@ -6,7 +6,7 @@
 /*   By: sben-ela <sben-ela@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/04 13:11:31 by aybiouss          #+#    #+#             */
-/*   Updated: 2023/10/05 14:57:41 by sben-ela         ###   ########.fr       */
+/*   Updated: 2023/10/05 17:59:32 by sben-ela         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -121,7 +121,7 @@ void Servers::printServerData() const
 
 int Servers::AllServers()
 {
-    int maxFd = 0;   // will store the maximum file descriptor value for use in select()
+    int maxFd = 2;   // will store the maximum file descriptor value for use in select()
     fd_set read_fds; // fd_set is a data structure used to manage file descriptors for I/O operations.
                      //  Fill up a fd_set structure with the file descriptors you want to know when data comes in on.
     int server_fd;
@@ -198,6 +198,8 @@ int Servers::AllServers()
     }
     while (true)
     {
+        FD_CLR(0, &read_fds);
+        FD_CLR(0, &write_fds);
         fd_set tmp_read = read_fds;
         fd_set tmp_write = write_fds;
         int readySockets = select(maxFd + 1, &tmp_read, &tmp_write, NULL, NULL); // !
@@ -219,7 +221,7 @@ int Servers::AllServers()
                     }
                 }
             }
-            continue;
+            continue; // !
         }
         for (std::map<int, Configuration>::iterator it = serverSockets.begin(); it != serverSockets.end(); it++)
         {
@@ -241,15 +243,14 @@ int Servers::AllServers()
                 new_client.set_socket(clientSocketw);
                 new_client.set_server(it->second);
                 _client.push_back(new_client);
-                if (clientSocketw >= 0) {
+                if (clientSocketw > 0) { // !
                     std::cout << "add " << clientSocketw << " to the read_fds" << std::endl;
                     FD_SET(clientSocketw, &read_fds);
                 }
                 else {
                    std::cout << "FD_SET fails To add the clientSocketw to read_fds" << std::endl;
                    exit(20);
-                }
-
+                } 
             }
         }
         for (std::vector<Client>::iterator its = _client.begin(); its != _client.end(); its++)
@@ -304,7 +305,7 @@ int Servers::AllServers()
                 if (its->_status == 0)
                     its->ft_Response();
                 else
-                    ft_send(*its);
+                    its->ft_send();
                 if (its->_readStatus == -1 || its->_readStatus == 0)
                 {
                     FD_CLR(its->GetSocketId(), &write_fds);

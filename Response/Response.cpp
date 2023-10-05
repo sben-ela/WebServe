@@ -6,7 +6,7 @@
 /*   By: sben-ela <sben-ela@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/17 11:36:51 by sben-ela          #+#    #+#             */
-/*   Updated: 2023/10/05 14:40:09 by sben-ela         ###   ########.fr       */
+/*   Updated: 2023/10/05 17:42:27 by sben-ela         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -95,19 +95,6 @@ std::string getFileName(const std::string& path, size_t first)
     return("/" + fileName);
 }
 
-/// @brief join root with the requested path 
-std::string     Client::getFilePath( void )
-{
-    std::string filePath;
-	size_t index;
-
-	index = getLocationIndex();
-        
-	filePath = getServer().getRoot() + getFileName(response.getPath()
-	, getServer().getLocations()[index].getpattern().size());
-	return (filePath);
-}
-
 void    Client::SendErrorPage(int errorNumber)
 {
     std::stringstream ss;
@@ -141,32 +128,28 @@ std::string getExtention(const std::string& filePath)
     return(filePath.substr(dotIndex));
 }
 
-void ft_send(Client& client)
+void    Client::ft_send( void )
 {
     char buff[BUFFER_SIZE];
     std::cout << "enter ft-send" << std::endl;
-    std::cout << "target FD : " << client._content_fd << std::endl;
-    if (!isOpen(client._content_fd))
+    std::cout << "target FD : " << _content_fd << std::endl;
+    if (!isOpen(_content_fd))
     {
-        std::cout << " the file fd is closed : " << client._content_fd << std::endl;
-        client._readStatus = -1;
+        std::cout << " the file fd is closed : " << _content_fd << std::endl;
+        _readStatus = -1;
     }
-    if (!isOpen(client.GetSocketId()))
+    if (!isOpen(GetSocketId()))
     {
-        std::cout << " the socket fd is closed : " << client.GetSocketId() << std::endl;
-        client._readStatus = -1;
+        std::cout << " the socket fd is closed : " << GetSocketId() << std::endl;
+        _readStatus = -1;
     }
-    if ((client._readStatus = read(client._content_fd, buff, BUFFER_SIZE)) >= 0)
+    if ((_readStatus = read(_content_fd, buff, BUFFER_SIZE)) >= 0)
     {
         std::cout << "++++ Read +++" << std::endl;
-        // if (fcntl(client.GetSocketId(), F_SETFL, O_NONBLOCK) == -1) {
-        //     perror("Error setting file descriptor to non-blocking mode");
-        //     return ;
-        // }
-        if (write(client.GetSocketId(), buff, BUFFER_SIZE) < 0)
+        if (write(GetSocketId(), buff, BUFFER_SIZE) < 0)
         {
             std::cout << "++++ Write +++" << std::endl;
-            client._readStatus = -1;
+            _readStatus = -1;
             // throw(0);
         }
         std::cout << "------- Read ----------" << std::endl;
@@ -192,7 +175,7 @@ void    Client::Reply( void )
         if (!pid)
         {
             std::map<std::string, std::string> intrepreter = getServer().getCgi();
-            std::string filePath  = getFilePath().c_str();
+            std::string filePath  = _targetPath.c_str();
             char *Path[3] = {(char*)intrepreter[response.GetFileExtention()].c_str(), (char *)filePath.c_str(), NULL};
             fd = open (outfile.c_str(), O_CREAT | O_RDWR | O_TRUNC, 0666);
             if (fd < 0)
@@ -218,7 +201,7 @@ void    Client::Reply( void )
     }
     else
     {
-        fd = open (getFilePath().c_str(), O_RDONLY);
+        fd = open (_targetPath.c_str(), O_RDONLY);
         if (fd < 0)
             throw(std::runtime_error("Open Failed in GgI"));
     }
@@ -260,12 +243,11 @@ void    Client::DirectoryHasIndexFile(const std::string& indexFile)
 /// @brief if the request is a directory 
 void    Client::handleDirectory(const std::string& filePath)
 {
-    size_t locationIndex = getLocationIndex();
     if (filePath[filePath.size() - 1] != '/')
         SendErrorPage(MOVEDPERMANENTLY);
-    if (response.getMethod() == "GET" && getServer().getLocations()[locationIndex].getIndex().empty() && getServer().getIndex().empty())
+    if (response.getMethod() == "GET" && getServer().getLocations()[_locationIndex].getIndex().empty() && getServer().getIndex().empty())
     {
-        if (getServer().getLocations()[locationIndex].getAutoIndex())
+        if (getServer().getLocations()[_locationIndex].getAutoIndex())
         {
             std::stringstream ss;
             std::string test = GenerateDirectoryListing(filePath);
@@ -280,8 +262,8 @@ void    Client::handleDirectory(const std::string& filePath)
         else
             SendErrorPage(FORBIDDEN);
     }
-    else if (!getServer().getLocations()[locationIndex].getIndex().empty())
-        DirectoryHasIndexFile(getServer().getLocations()[locationIndex].getIndex());
+    else if (!getServer().getLocations()[_locationIndex].getIndex().empty())
+        DirectoryHasIndexFile(getServer().getLocations()[_locationIndex].getIndex());
     else if (!getServer().getIndex().empty())
         DirectoryHasIndexFile(getServer().getIndex());
     else
@@ -337,21 +319,24 @@ void    Delete_dir(const std::string& folderPath)
 /// @brief DELETE method 
 void    Client::ft_delete( void )
 {
-    std::string targetPath = getFilePath().c_str();
-    size_t locationIndex = getLocationIndex();
-    if (isDirectory(targetPath.c_str()))
+    if (isDirectory(_targetPath.c_str()))
     {
-        if (targetPath[targetPath.size() - 1] != '/')
+        if (_targetPath[_targetPath.size() - 1] != '/')
             SendErrorPage(CONFLICT);
-        else if(getServer().getLocations()[locationIndex].getIndex().empty() && getServer().getIndex().empty())
-            Delete_dir(targetPath);
-        else if (!getServer().getLocations()[locationIndex].getIndex().empty())
-            checkIndexFile(getServer().getLocations()[locationIndex].getIndex(), targetPath);
+        else if(getServer().getLocations()[_locationIndex].getIndex().empty() && getServer().getIndex().empty())
+            Delete_dir(_targetPath);
+        else if (!getServer().getLocations()[_locationIndex].getIndex().empty())
+            checkIndexFile(getServer().getLocations()[_locationIndex].getIndex(), _targetPath);
         else if (!getServer().getIndex().empty())
-            checkIndexFile(getServer().getIndex(), targetPath);
+            checkIndexFile(getServer().getIndex(), _targetPath);
     }
     else
-        std::remove(targetPath.c_str());
+        std::remove(_targetPath.c_str());
+}
+void    Client::setTargetPath( void )
+{
+	_targetPath = getServer().getRoot() + getFileName(response.getPath()
+	, getServer().getLocations()[_locationIndex].getpattern().size());
 }
 
 void    Client::ft_Response( void )
@@ -362,25 +347,24 @@ void    Client::ft_Response( void )
         static int i = 0;
         std::cout << "********************START-RESPONSE  : " << "*******************" << std::endl;
         response.CreateStatusCode();
+        initLocationIndex();
+        setTargetPath();
         // std::cout << "Rs satatus : " << response.getResponseStatus() << std::endl;
         // if (response.getResponseStatus() != 0)
         //     SendErrorPage(response.getResponseStatus());
-        initLocationIndex();
-        std::string filePath = getFilePath().c_str();
-        short index = getLocationIndex();
-        initMethods(methods, getServer().getLocations()[index].getLimit_except());
-        if (access(filePath.c_str(), F_OK))
+        initMethods(methods, getServer().getLocations()[_locationIndex].getLimit_except());
+        if (access(_targetPath.c_str(), F_OK))
             SendErrorPage(NOTFOUND);
-        else if (access(filePath.c_str(), R_OK))
+        else if (access(_targetPath.c_str(), R_OK))
             SendErrorPage(FORBIDDEN);
         else if (response.getMethod() == "GET")
         {
-            std::cout << "------------------------------------- " << i++ << "---------------------------------------------" << std::endl;
+            std::cout << "------------------------------------- " << i++ << " ---------------------------------------------" << std::endl;
             // sleep(1);
             if (!methods._get)
                 SendErrorPage(FORBIDDEN);
-            if (isDirectory(filePath.c_str()))
-                handleDirectory(filePath);
+            if (isDirectory(_targetPath.c_str()))
+                handleDirectory(_targetPath);
             else
                 Reply();
         }
@@ -394,10 +378,10 @@ void    Client::ft_Response( void )
         {
             if (!methods._post)
                 SendErrorPage(FORBIDDEN);
-            if (getServer().getLocations()[index].getUpload().empty())
+            if (getServer().getLocations()[_locationIndex].getUpload().empty())
                 throw(std::runtime_error("empty upload path"));
-            if (isDirectory(filePath.c_str()))
-                handleDirectory(filePath);
+            if (isDirectory(_targetPath.c_str()))
+                handleDirectory(_targetPath);
             else
                 Reply();
             // SendErrorPage(CREATED);
@@ -429,4 +413,3 @@ bool isOpen(int fd)
     return(true);
 }
 
-/// ! write kathangi f ft_send

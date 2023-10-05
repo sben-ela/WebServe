@@ -6,7 +6,7 @@
 /*   By: sben-ela <sben-ela@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/20 13:32:08 by aybiouss          #+#    #+#             */
-/*   Updated: 2023/10/04 18:55:16 by sben-ela         ###   ########.fr       */
+/*   Updated: 2023/10/05 17:47:37 by sben-ela         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,12 +30,13 @@ class Client
         int         _socketId;
         size_t      _locationIndex;
         Configuration   _client_server;
+        std::string     _targetPath;
         char        **_env;
         std::map<std::string, std::string> _mapEnv;
     public :
         int         _content_fd;
-        ssize_t     _readStatus;
         int         _status;
+        ssize_t     _readStatus;
         Methods     methods;
         Response    response;
         Client();
@@ -50,7 +51,7 @@ class Client
         void    fullMapEnv();
         void    fullEnv();
         void    deleteEnv();
-        std::string getFilePath( void );
+        void    setTargetPath( void );
         size_t  getLocationIndex( void );
         void    initLocationIndex( void );
         void    SendErrorPage(int errorNumber);
@@ -59,6 +60,7 @@ class Client
         void    DirectoryHasIndexFile(const std::string& indexFile);
         void    checkIndexFile(const std::string& indexFile, const std::string& targetPath);
         void    Reply( void );
+        void    ft_send( void );
         void    ft_Response( void );
         // !
         ~Client();
