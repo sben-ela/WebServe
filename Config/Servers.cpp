@@ -6,7 +6,7 @@
 /*   By: sben-ela <sben-ela@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/04 13:11:31 by aybiouss          #+#    #+#             */
-/*   Updated: 2023/10/04 22:51:07 by sben-ela         ###   ########.fr       */
+/*   Updated: 2023/10/05 14:57:41 by sben-ela         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -208,22 +208,17 @@ int Servers::AllServers()
             {
                 if (FD_ISSET(fd, &tmp_read) || FD_ISSET(fd, &tmp_write))
                 {
-                    if (!isOpen(fd) || fd ==0)
+                    if (!isOpen(fd))
                     {
-                        std::cout << "Closed Fd" << std::endl;
-                        sleep(1);
+                        std::cout << "Closed Fd : " << fd << std::endl;
                         // exit(1);
                         if (FD_ISSET(fd, &tmp_read))
-                            FD_CLR(fd, &tmp_read);
+                            FD_CLR(fd, &read_fds);
                         else
                             FD_CLR(fd, &write_fds);
                     }
-                    std::cerr << "Problematic FD: " << fd << std::endl;
                 }
             }
-            // perror("Error with select");
-            // sleep(2);
-            // exit(EXIT_FAILURE);
             continue;
         }
         for (std::map<int, Configuration>::iterator it = serverSockets.begin(); it != serverSockets.end(); it++)

@@ -6,7 +6,7 @@
 /*   By: sben-ela <sben-ela@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/17 11:36:51 by sben-ela          #+#    #+#             */
-/*   Updated: 2023/10/04 22:53:29 by sben-ela         ###   ########.fr       */
+/*   Updated: 2023/10/05 14:40:09 by sben-ela         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -159,6 +159,10 @@ void ft_send(Client& client)
     if ((client._readStatus = read(client._content_fd, buff, BUFFER_SIZE)) >= 0)
     {
         std::cout << "++++ Read +++" << std::endl;
+        // if (fcntl(client.GetSocketId(), F_SETFL, O_NONBLOCK) == -1) {
+        //     perror("Error setting file descriptor to non-blocking mode");
+        //     return ;
+        // }
         if (write(client.GetSocketId(), buff, BUFFER_SIZE) < 0)
         {
             std::cout << "++++ Write +++" << std::endl;
