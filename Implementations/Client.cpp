@@ -6,7 +6,7 @@
 /*   By: sben-ela <sben-ela@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/20 13:32:21 by aybiouss          #+#    #+#             */
-/*   Updated: 2023/10/05 22:47:11 by sben-ela         ###   ########.fr       */
+/*   Updated: 2023/10/06 15:43:43 by sben-ela         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -60,11 +60,9 @@ const Configuration&      Client::getServer( void ) const
 
 void    Client::fullMapEnv()
 {
-    _mapEnv["REQUEST_METHOD"] = response.getMethod();
     _mapEnv["CONTENT_TYPE"] = get_content_type();
     _mapEnv["QUERY_STRING"] = response.getQueryString();
     _mapEnv["PATH_INFO"] = response.getPath(); 
-    _mapEnv["REDIRECT_STATUS"] = "1";
 }
 
 void    Client::fullEnv()
