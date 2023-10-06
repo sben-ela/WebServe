@@ -6,7 +6,7 @@
 /*   By: sben-ela <sben-ela@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/17 11:36:51 by sben-ela          #+#    #+#             */
-/*   Updated: 2023/10/05 17:42:27 by sben-ela         ###   ########.fr       */
+/*   Updated: 2023/10/05 22:49:27 by sben-ela         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -157,6 +157,7 @@ void    Client::ft_send( void )
     std::cout << "exit ft-send" << std::endl;
 }
 
+
 /// @brief GET method
 void    Client::Reply( void )
 {
@@ -170,6 +171,7 @@ void    Client::Reply( void )
     memset(buff, 0, BUFFER_SIZE);
     if (response.GetFileExtention() == ".php" || response.GetFileExtention() == ".py")
     {
+        fullEnv();
         std::string outfile = GenerateFile();
         int pid  = fork();
         if (!pid)
@@ -188,10 +190,12 @@ void    Client::Reply( void )
                 dup2(bodyFd, 0);
                 close(bodyFd);
             }
-            execve(Path[0], Path, 0);// ! ENV
+            execve(Path[0], Path, _env);// ! ENV
+            deleteEnv();
             std::cout << "ERRRRORRR" << std::endl;
             exit(EXFIALE);
         }
+        deleteEnv();
         waitpid(pid, 0, 0);
         fd = open (outfile.c_str(), O_CREAT | O_RDWR , 0777);
         if (fd < 0)
@@ -349,6 +353,7 @@ void    Client::ft_Response( void )
         response.CreateStatusCode();
         initLocationIndex();
         setTargetPath();
+
         // std::cout << "Rs satatus : " << response.getResponseStatus() << std::endl;
         // if (response.getResponseStatus() != 0)
         //     SendErrorPage(response.getResponseStatus());

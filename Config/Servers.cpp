@@ -6,7 +6,7 @@
 /*   By: sben-ela <sben-ela@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/04 13:11:31 by aybiouss          #+#    #+#             */
-/*   Updated: 2023/10/05 17:59:32 by sben-ela         ###   ########.fr       */
+/*   Updated: 2023/10/05 22:15:31 by sben-ela         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -247,10 +247,10 @@ int Servers::AllServers()
                     std::cout << "add " << clientSocketw << " to the read_fds" << std::endl;
                     FD_SET(clientSocketw, &read_fds);
                 }
-                else {
-                   std::cout << "FD_SET fails To add the clientSocketw to read_fds" << std::endl;
-                   exit(20);
-                } 
+                // else {
+                //    std::cout << "FD_SET fails To add the clientSocketw to read_fds" << std::endl;
+                //    exit(20);
+                // } 
             }
         }
         for (std::vector<Client>::iterator its = _client.begin(); its != _client.end(); its++)
@@ -286,8 +286,10 @@ int Servers::AllServers()
                 else
                 {
                     std::string buf(buffer, bytesRead);
-                    std::cout << "psps" << std::endl;
-                    if (!its->response.parseHttpRequest(buf, its->GetSocketId(), bytesRead)) // la 9ra kolchi
+                    std::cout << "*****************" << std::endl;
+                    std::cout << buf << std::endl;
+                    std::cout << "*****************" << std::endl;
+                    if (!its->response.parseHttpRequest(buf)) // la 9ra kolchi
                     {
                         FD_CLR(its->GetSocketId(), &read_fds);
                         std::cout << "add " << its->GetSocketId() << " to write_fds " << std::endl;

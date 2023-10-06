@@ -6,7 +6,7 @@
 /*   By: sben-ela <sben-ela@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/20 13:32:21 by aybiouss          #+#    #+#             */
-/*   Updated: 2023/10/04 18:22:48 by sben-ela         ###   ########.fr       */
+/*   Updated: 2023/10/05 22:47:11 by sben-ela         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -60,10 +60,11 @@ const Configuration&      Client::getServer( void ) const
 
 void    Client::fullMapEnv()
 {
-    _mapEnv["REQUEST_METHOD"] = this->response.getMethod();
-    _mapEnv["CONTENT_TYPE"] = this->get_content_type();
-    _mapEnv["QUERY_STRING"] = this->response.getQueryString();
-    _mapEnv["PATH_INFO"] = this->response.getPath();    
+    _mapEnv["REQUEST_METHOD"] = response.getMethod();
+    _mapEnv["CONTENT_TYPE"] = get_content_type();
+    _mapEnv["QUERY_STRING"] = response.getQueryString();
+    _mapEnv["PATH_INFO"] = response.getPath(); 
+    _mapEnv["REDIRECT_STATUS"] = "1";
 }
 
 void    Client::fullEnv()
@@ -75,11 +76,10 @@ void    Client::fullEnv()
     for (std::map<std::string, std::string>::iterator it = _mapEnv.begin(); it != _mapEnv.end();)
     {
         _env[i] = strdup((char *)(it->first + "=" + it->second).c_str());
-        std::cout << "ENV : " << _env[i] << std::endl;
         it++;
         i++;
     }
-    _env[i] = 0;
+    _env[i] = NULL;
 }
 
 void    Client::deleteEnv()

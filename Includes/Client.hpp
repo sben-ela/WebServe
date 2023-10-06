@@ -6,7 +6,7 @@
 /*   By: sben-ela <sben-ela@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/20 13:32:08 by aybiouss          #+#    #+#             */
-/*   Updated: 2023/10/05 17:47:37 by sben-ela         ###   ########.fr       */
+/*   Updated: 2023/10/05 22:13:15 by sben-ela         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,11 +27,11 @@ struct   Methods
 class Client
 {
     private:
-        int         _socketId;
-        size_t      _locationIndex;
-        Configuration   _client_server;
+        int             _socketId;
+        char**          _env;
+        size_t          _locationIndex;
         std::string     _targetPath;
-        char        **_env;
+        Configuration   _client_server;
         std::map<std::string, std::string> _mapEnv;
     public :
         int         _content_fd;

@@ -1,7 +1,7 @@
 NAME = webserv
 CC = c++
 RM = rm -f
-CPPFLAGS = -Wall -Wextra -Werror -std=c++98  -fsanitize=address -g2
+CPPFLAGS = -Wall -Wextra -Werror -std=c++98  -fsanitize=address 
 IMPLEMENTATIONS = Socket.cpp Request.cpp Response.cpp Client.cpp
 CONFIG = Servers.cpp Configuration.cpp Location.cpp
 SRCS = $(addprefix ./Config/, $(CONFIG)) \
