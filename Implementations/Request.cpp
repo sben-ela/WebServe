@@ -6,7 +6,7 @@
 /*   By: sben-ela <sben-ela@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/05 09:27:53 by aybiouss          #+#    #+#             */
-/*   Updated: 2023/10/05 22:33:39 by sben-ela         ###   ########.fr       */
+/*   Updated: 2023/10/06 13:30:40 by sben-ela         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -478,7 +478,7 @@ std::string         Request::ft_temp( void ) const
     index = _contentTypeValue.find('/');
     if (index == std::string::npos)
         return(extention);
-    extention = _contentTypeValue.substr(index + 1, _contentTypeValue.length() - index - 2);
+    extention = _contentTypeValue.substr(index + 1, _contentTypeValue.length() - index - 1); // ! kant hna index + 2 rdito index+1
     return (extention);
 }
 
