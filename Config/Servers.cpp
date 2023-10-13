@@ -6,7 +6,7 @@
 /*   By: sben-ela <sben-ela@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/04 13:11:31 by aybiouss          #+#    #+#             */
-/*   Updated: 2023/10/05 22:15:31 by sben-ela         ###   ########.fr       */
+/*   Updated: 2023/10/13 11:21:51 by sben-ela         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -159,7 +159,8 @@ int Servers::AllServers()
             }
             if (bind(server_fd, p->ai_addr, p->ai_addrlen) == -1)
             {
-                close(server_fd);
+                std::cout << it->getHost() << "|" << it->getPort() << std::endl;
+                ft_close(server_fd);
                 perror("server: bind");
                 continue;
             }
@@ -253,6 +254,7 @@ int Servers::AllServers()
                 // } 
             }
         }
+        const std::string FAVICON_PATH = "/favicon.ico";
         for (std::vector<Client>::iterator its = _client.begin(); its != _client.end(); its++)
         {
             if (FD_ISSET(its->GetSocketId(), &tmp_read))
@@ -265,7 +267,7 @@ int Servers::AllServers()
                 if (bytesRead < 0)
                 {
                     perror("Error reading from socket");
-                    close(its->GetSocketId());
+                    ft_close(its->GetSocketId());
                     if (its->GetSocketId() == maxFd)
                         maxFd -= 1;
                     its = _client.erase(its);
@@ -275,7 +277,7 @@ int Servers::AllServers()
                 }
                 else if (bytesRead == 0)
                 {
-                    close(its->GetSocketId());
+                    ft_close(its->GetSocketId());
                     if (its->GetSocketId() == maxFd)
                         maxFd -= 1;
                     FD_CLR(its->GetSocketId(), &read_fds);
@@ -286,11 +288,23 @@ int Servers::AllServers()
                 else
                 {
                     std::string buf(buffer, bytesRead);
-                    std::cout << "*****************" << std::endl;
-                    std::cout << buf << std::endl;
-                    std::cout << "*****************" << std::endl;
-                    if (!its->response.parseHttpRequest(buf)) // la 9ra kolchi
+                    if (strstr(buffer, FAVICON_PATH.c_str()) == NULL)
                     {
+                        its->_isFavicon = false;
+                        // std::cout << "*****************" << std::endl;
+                        // std::cout << buf << std::endl;
+                        // std::cout << "*****************" << std::endl;
+                        if (!its->response.parseHttpRequest(buf)) // la 9ra kolchi
+                        {
+                            FD_CLR(its->GetSocketId(), &read_fds);
+                            std::cout << "add " << its->GetSocketId() << " to write_fds " << std::endl;
+                            FD_SET(its->GetSocketId(), &write_fds);                            
+                        }
+
+                    }
+                    else
+                    {
+                        its->_isFavicon = true;
                         FD_CLR(its->GetSocketId(), &read_fds);
                         std::cout << "add " << its->GetSocketId() << " to write_fds " << std::endl;
                         FD_SET(its->GetSocketId(), &write_fds);
@@ -302,27 +316,62 @@ int Servers::AllServers()
         {
             if (FD_ISSET(its->GetSocketId(), &tmp_write))
             {
-                std::cout << "1: SOCKET ID " << its->GetSocketId() << std::endl;
                 its->_readStatus = -2;
-                if (its->_status == 0)
+                if (its->_isFavicon)
+                {
+                    std::stringstream ss;
+                    struct stat statbuffer;
+                    char buff[BUFFER_SIZE];
+                    std::string header;
+
+                    int efd = open(its->getServer().getErrorPages()[404].c_str(), O_RDONLY);
+                    if (efd < 0)
+                        throw(std::runtime_error("Invalid Error page !"));
+                    fstat(efd, &statbuffer);
+                    ss << statbuffer.st_size;
+                    header = std::string("HTTP/1.1") + " 404 Not Found" + "\r\nContent-Length: " + ss.str() + "\r\n\r\n";
+                    int bytes = write(its->GetSocketId(), header.c_str(), header.size());
+                    if (bytes < 0)
+                        throw(std::runtime_error(" write failed in sendErrorpage"));
+                    int rd = read(efd, buff, BUFFER_SIZE);
+                    buff[rd] = '\0';
+                    write(its->GetSocketId(), buff, BUFFER_SIZE);
+                    its->_readStatus = -1;
+                    std::cout << " IS FAVICON : " << its->response.getHttpVersion() << std::endl;
+                    // its->SendErrorPage(404);
+                }
+                else if (its->_status == 0)
                     its->ft_Response();
-                else
+                else if (its->_status != 19)
                     its->ft_send();
+                else
+                {
+                    int r = waitpid(its->_cgiPid, 0, WNOHANG);
+                    if (r == -1)
+                    {
+                        its->SendHeader(its->_content_fd, 0);
+                        its->_status = 1;
+                    }
+                    else if(std::time(NULL) - its->_cgiTimer >= 15)
+                    {
+                        kill(its->_cgiPid , SIGKILL);
+                        its->SendErrorPage(REQUESTTIMEOUT);
+                    }
+                }
                 if (its->_readStatus == -1 || its->_readStatus == 0)
                 {
                     FD_CLR(its->GetSocketId(), &write_fds);
-                    close(its->GetSocketId());
-                    close(its->_content_fd);
+                    ft_close(its->GetSocketId());
+                    ft_close(its->_content_fd);
                     its->set_socket(-1);
                     its->_content_fd = -1;
-                    std::cout << "2: SOCKET ID " << its->GetSocketId() << std::endl;
                     its = _client.erase(its);
                 }
             }
             else
                 ++its;
         }
-    }
+    } 
     return 0;
 }
 // for (std::vector<Client>::iterator it = _client.begin(); it != _client.end(); it++)
@@ -331,4 +380,3 @@ int Servers::AllServers()
 //     {
         
 //     }
-// }

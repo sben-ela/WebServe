@@ -6,13 +6,15 @@
 /*   By: sben-ela <sben-ela@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/20 13:32:21 by aybiouss          #+#    #+#             */
-/*   Updated: 2023/10/06 15:43:43 by sben-ela         ###   ########.fr       */
+/*   Updated: 2023/10/13 11:32:47 by sben-ela         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../Includes/Client.hpp"
 
-Client::Client() : _status(0) {}
+Client::Client() : _status(0) {
+    _isFavicon = false;
+}
 
 void    Client::set_server(Configuration p)
 {
@@ -68,7 +70,6 @@ void    Client::fullMapEnv()
 void    Client::fullEnv()
 {
     fullMapEnv();
-    std::cout << _mapEnv.size() << std::endl;
     _env = new char*[_mapEnv.size() + 1];
     size_t i = 0;
     for (std::map<std::string, std::string>::iterator it = _mapEnv.begin(); it != _mapEnv.end();)

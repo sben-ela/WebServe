@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Request.hpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: sben-ela <sben-ela@student.42.fr>          +#+  +:+       +#+        */
+/*   By: aybiouss <aybiouss@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/04 17:07:10 by aybiouss          #+#    #+#             */
-/*   Updated: 2023/10/05 22:34:09 by sben-ela         ###   ########.fr       */
+/*   Updated: 2023/10/10 14:58:19 by aybiouss         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -38,10 +38,15 @@ class Request
         bool        _headers_done;
         int         _fd;
         std::string _contentTypeValue;
+        bool        _condition;
+        unsigned long         _length;
+        unsigned long         _total;
+        bool                  _chunked;
     public:
         Request();
         Request(const Request& other);
         Request& operator=(const Request& other);
+        int                        processAllBody();
         int                        parseHttpRequest(std::string requestBuffer);
         const std::string&         getPath() const;
         const std::string&         getMethod() const;

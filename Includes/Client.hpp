@@ -6,7 +6,7 @@
 /*   By: sben-ela <sben-ela@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/20 13:32:08 by aybiouss          #+#    #+#             */
-/*   Updated: 2023/10/05 22:13:15 by sben-ela         ###   ########.fr       */
+/*   Updated: 2023/10/12 17:26:19 by sben-ela         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,8 +36,11 @@ class Client
     public :
         int         _content_fd;
         int         _status;
+        std::time_t _cgiTimer;
+        int         _cgiPid;
         ssize_t     _readStatus;
         Methods     methods;
+        bool        _isFavicon;
         Response    response;
         Client();
         Client(const Client& other);
@@ -48,6 +51,7 @@ class Client
         void    set_socket(int socket);
         // ! NEW
         const char* get_content_type( void );
+        void    SendHeader(int fd , int readBytes);
         void    fullMapEnv();
         void    fullEnv();
         void    deleteEnv();

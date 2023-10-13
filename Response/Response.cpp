@@ -6,7 +6,7 @@
 /*   By: sben-ela <sben-ela@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/17 11:36:51 by sben-ela          #+#    #+#             */
-/*   Updated: 2023/10/05 22:49:27 by sben-ela         ###   ########.fr       */
+/*   Updated: 2023/10/13 12:43:48 by sben-ela         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -131,8 +131,6 @@ std::string getExtention(const std::string& filePath)
 void    Client::ft_send( void )
 {
     char buff[BUFFER_SIZE];
-    std::cout << "enter ft-send" << std::endl;
-    std::cout << "target FD : " << _content_fd << std::endl;
     if (!isOpen(_content_fd))
     {
         std::cout << " the file fd is closed : " << _content_fd << std::endl;
@@ -145,27 +143,28 @@ void    Client::ft_send( void )
     }
     if ((_readStatus = read(_content_fd, buff, BUFFER_SIZE)) >= 0)
     {
-        std::cout << "++++ Read +++" << std::endl;
         if (write(GetSocketId(), buff, BUFFER_SIZE) < 0)
-        {
-            std::cout << "++++ Write +++" << std::endl;
             _readStatus = -1;
-            // throw(0);
-        }
-        std::cout << "------- Read ----------" << std::endl;
     }
-    std::cout << "exit ft-send" << std::endl;
 }
 
+void    Client::SendHeader(int fd , int readBytes)
+{
+    std::string header;
+    std::stringstream ss;
+    struct stat statbuffer;
+
+    fstat(fd, &statbuffer);
+    ss << statbuffer.st_size - readBytes;
+    header = response.getHttpVersion() + " 200 OK\r\nContent-Type: "
+    + get_content_type() + "\r\nContent-Length: " + ss.str() + "\r\n\r\n";
+    send(GetSocketId(), header.c_str(), header.size(), 0);
+}
 
 /// @brief GET method
 void    Client::Reply( void )
 {
     char buff[BUFFER_SIZE];
-    std::string header;
-    std::stringstream ss;
-    struct stat statbuffer;
-    int readBytes = 0;
     int bodyFd;
     int fd;
     memset(buff, 0, BUFFER_SIZE);
@@ -173,8 +172,8 @@ void    Client::Reply( void )
     {
         fullEnv();
         std::string outfile = GenerateFile();
-        int pid  = fork();
-        if (!pid)
+        _cgiPid = fork();
+        if (!_cgiPid)
         {
             std::map<std::string, std::string> intrepreter = getServer().getCgi();
             std::string filePath  = _targetPath.c_str();
@@ -183,12 +182,12 @@ void    Client::Reply( void )
             if (fd < 0)
                 throw(std::runtime_error("Open Failed"));
             dup2(fd, 1);
-            close(fd);
+            ft_close(fd);
             if (response.getMethod() == "POST")
             {
                 bodyFd = response.getFd();
                 dup2(bodyFd, 0);
-                close(bodyFd);
+                ft_close(bodyFd);
             }
             execve(Path[0], Path, _env);// ! ENV
             deleteEnv();
@@ -196,12 +195,16 @@ void    Client::Reply( void )
             exit(EXFIALE);
         }
         deleteEnv();
-        waitpid(pid, 0, 0);
+        // waitpid(pid, 0, 0);
+        _status = 19;
+        _cgiTimer = std::time(NULL);
         fd = open (outfile.c_str(), O_CREAT | O_RDWR , 0777);
         if (fd < 0)
             throw(std::runtime_error("Open Failed  in GET-CGI "));
         if (response.GetFileExtention() == ".php")
-            readBytes = read(fd, buff, HEADER_SIZE);
+            read(fd, buff, HEADER_SIZE);
+        _content_fd = fd;
+        return ;
     }
     else
     {
@@ -209,11 +212,7 @@ void    Client::Reply( void )
         if (fd < 0)
             throw(std::runtime_error("Open Failed in GgI"));
     }
-    fstat(fd, &statbuffer);
-    ss << statbuffer.st_size - readBytes;
-    header = response.getHttpVersion() + " 200 OK\r\nContent-Type: "
-    + get_content_type() + "\r\nContent-Length: " + ss.str() + "\r\n\r\n";
-    send(GetSocketId(), header.c_str(), header.size(), 0);
+    SendHeader(fd, 0);
     _content_fd = fd;
     _status = 1;
 }
@@ -258,10 +257,8 @@ void    Client::handleDirectory(const std::string& filePath)
             ss << test.size();
             std::string header = response.getHttpVersion() + " 200 OK\r\nContent-Type: "
                 + "text/html" + "\r\nContent-length: " + ss.str() + "\r\n\r\n";
-            if (write(GetSocketId(), header.c_str(), header.size()) < 0)
-                _readStatus = -1;
-            if (write(GetSocketId(), test.c_str(), test.size()) < 0)
-                _readStatus = -1;
+            write(GetSocketId(), header.c_str(), header.size());
+            write(GetSocketId(), test.c_str(), test.size());
         }
         else
             SendErrorPage(FORBIDDEN);
@@ -272,6 +269,7 @@ void    Client::handleDirectory(const std::string& filePath)
         DirectoryHasIndexFile(getServer().getIndex());
     else
         SendErrorPage(FORBIDDEN);
+    _readStatus = -1;
 }
 
 /// @brief Initialize methods with their state
@@ -337,6 +335,7 @@ void    Client::ft_delete( void )
     else
         std::remove(_targetPath.c_str());
 }
+
 void    Client::setTargetPath( void )
 {
 	_targetPath = getServer().getRoot() + getFileName(response.getPath()
@@ -347,14 +346,13 @@ void    Client::ft_Response( void )
 {
     try
     {
+        _content_fd = -1;
         signal(SIGPIPE, SIG_IGN);
-        static int i = 0;
-        std::cout << "********************START-RESPONSE  : " << "*******************" << std::endl;
+        std::cout << "*****÷*************** START-RESPONSE  " << "*******************" << std::endl;
         response.CreateStatusCode();
         initLocationIndex();
         setTargetPath();
 
-        // std::cout << "Rs satatus : " << response.getResponseStatus() << std::endl;
         // if (response.getResponseStatus() != 0)
         //     SendErrorPage(response.getResponseStatus());
         initMethods(methods, getServer().getLocations()[_locationIndex].getLimit_except());
@@ -364,8 +362,6 @@ void    Client::ft_Response( void )
             SendErrorPage(FORBIDDEN);
         else if (response.getMethod() == "GET")
         {
-            std::cout << "------------------------------------- " << i++ << " ---------------------------------------------" << std::endl;
-            // sleep(1);
             if (!methods._get)
                 SendErrorPage(FORBIDDEN);
             if (isDirectory(_targetPath.c_str()))
@@ -375,6 +371,7 @@ void    Client::ft_Response( void )
         }
         else if (response.getMethod() == "DELETE")
         {
+
             if (!methods._delete)
                 SendErrorPage(FORBIDDEN);
             ft_delete();
@@ -401,9 +398,9 @@ void    Client::ft_Response( void )
     } 
     catch(const int e)
     {
-        std::cout << e << std::endl;
+        std::cout << " Catch int : " << e << std::endl;
     }
-    std::cout << "********************END-RESPONSE*******************" << std::endl;
+    std::cout << "******************** END-RESPONSE *******************" << std::endl;
 }
 
 bool isOpen(int fd)
@@ -414,7 +411,12 @@ bool isOpen(int fd)
         std::cout << "invalid Fd " << std::endl;
         return (false);
     }
-    std::cout << "valid Fd " << std::endl;;
     return(true);
 }
 
+void ft_close(int fd)
+{
+    if (fd == -1)
+        return ;
+    close (fd);
+}

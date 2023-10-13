@@ -6,7 +6,7 @@
 /*   By: sben-ela <sben-ela@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/04 17:12:03 by aybiouss          #+#    #+#             */
-/*   Updated: 2023/09/22 17:14:25 by sben-ela         ###   ########.fr       */
+/*   Updated: 2023/10/12 11:03:24 by sben-ela         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -118,7 +118,8 @@ int Socket::function() {
                 // std::cout << request.getHttpVersion() << std::endl;
                 const char *hello = "HTTP/1.1 200 OK\nContent-Type: text/plain\nContent-Length: 12\n\nHello world!";
                 write(sd, hello, strlen(hello));
-                close(sd);
+                // std::cout << " IN COCKET.CPP" << std::endl;
+                ft_close(sd);
                 // std::cout << response.getResponseStatus() << std::endl;
                 std::cout << "--------------------" << std::endl;
                 response.Function();
