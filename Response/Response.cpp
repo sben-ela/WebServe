@@ -6,7 +6,7 @@
 /*   By: sben-ela <sben-ela@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/17 11:36:51 by sben-ela          #+#    #+#             */
-/*   Updated: 2023/10/13 12:43:48 by sben-ela         ###   ########.fr       */
+/*   Updated: 2023/10/15 16:50:10 by sben-ela         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -148,14 +148,14 @@ void    Client::ft_send( void )
     }
 }
 
-void    Client::SendHeader(int fd , int readBytes)
+void    Client::SendHeader(int fd)
 {
     std::string header;
     std::stringstream ss;
     struct stat statbuffer;
 
     fstat(fd, &statbuffer);
-    ss << statbuffer.st_size - readBytes;
+    ss << statbuffer.st_size - _CgiHeader.size();
     header = response.getHttpVersion() + " 200 OK\r\nContent-Type: "
     + get_content_type() + "\r\nContent-Length: " + ss.str() + "\r\n\r\n";
     send(GetSocketId(), header.c_str(), header.size(), 0);
@@ -195,14 +195,14 @@ void    Client::Reply( void )
             exit(EXFIALE);
         }
         deleteEnv();
-        // waitpid(pid, 0, 0);
-        _status = 19;
+        _status = CGI;
         _cgiTimer = std::time(NULL);
-        fd = open (outfile.c_str(), O_CREAT | O_RDWR , 0777);
+        fd = open (outfile.c_str(), O_RDONLY);
         if (fd < 0)
             throw(std::runtime_error("Open Failed  in GET-CGI "));
+        _CgiHeader.clear();
         if (response.GetFileExtention() == ".php")
-            read(fd, buff, HEADER_SIZE);
+            readCgiHeader(fd);
         _content_fd = fd;
         return ;
     }
@@ -212,7 +212,7 @@ void    Client::Reply( void )
         if (fd < 0)
             throw(std::runtime_error("Open Failed in GgI"));
     }
-    SendHeader(fd, 0);
+    SendHeader(fd);
     _content_fd = fd;
     _status = 1;
 }
@@ -236,7 +236,11 @@ bool    isDirectory(const char* path) {
 
 void    Client::DirectoryHasIndexFile(const std::string& indexFile)
 {
-    response.setPath(response.getPath() + indexFile);
+    std::cout << _targetPath << std::endl;
+    _targetPath += indexFile;
+    std::cout << _targetPath << std::endl;
+    response.setPath(_targetPath);
+    // std::cout << response.getPath() << std::endl;
     if (file_exists(response.getPath())) // ! protect invalid index file
         Reply();
     else
@@ -259,6 +263,7 @@ void    Client::handleDirectory(const std::string& filePath)
                 + "text/html" + "\r\nContent-length: " + ss.str() + "\r\n\r\n";
             write(GetSocketId(), header.c_str(), header.size());
             write(GetSocketId(), test.c_str(), test.size());
+            _readStatus = -1;
         }
         else
             SendErrorPage(FORBIDDEN);
@@ -269,7 +274,6 @@ void    Client::handleDirectory(const std::string& filePath)
         DirectoryHasIndexFile(getServer().getIndex());
     else
         SendErrorPage(FORBIDDEN);
-    _readStatus = -1;
 }
 
 /// @brief Initialize methods with their state
@@ -284,6 +288,26 @@ void initMethods(Methods& methods, std::vector<std::string> allowMethods)
         else if (allowMethods[i] == "DELETE")
             methods._delete = true;
     }
+}
+
+void    Client::readCgiHeader( int fd )
+{
+    ssize_t     rd;
+    size_t      pos;
+    char        buff[BUFFER_SIZE];
+
+    rd = read(fd, buff, BUFFER_SIZE - 1);
+    if (rd <= 0)
+        return ;
+    buff[rd] = 0;
+    _CgiHeader = buff;
+    std::cout << "CGI HEADER : " << _CgiHeader << std::endl;
+    pos = _CgiHeader.find("\r\n\r\n");
+    if (pos == std::string::npos)
+        throw (std::runtime_error("Bad Gateway"));
+    lseek(fd, -1 * (rd - (pos + 4)), SEEK_CUR);
+    _CgiHeader = _CgiHeader.substr(0, pos + 4);
+    std::cout << "CGI HEADER : " << _CgiHeader << std::endl;
 }
 
 void    Client::checkIndexFile(const std::string& indexFile, const std::string& targetPath)
@@ -338,8 +362,13 @@ void    Client::ft_delete( void )
 
 void    Client::setTargetPath( void )
 {
-	_targetPath = getServer().getRoot() + getFileName(response.getPath()
+    std::string root = getServer().getLocations()[_locationIndex].getRoot();
+    if (root.empty())
+        root = getServer().getRoot();
+    std::cout << root << std::endl;
+	_targetPath = root + getFileName(response.getPath()
 	, getServer().getLocations()[_locationIndex].getpattern().size());
+    std::cout << "target "  << _targetPath << std::endl;
 }
 
 void    Client::ft_Response( void )
@@ -352,9 +381,6 @@ void    Client::ft_Response( void )
         response.CreateStatusCode();
         initLocationIndex();
         setTargetPath();
-
-        // if (response.getResponseStatus() != 0)
-        //     SendErrorPage(response.getResponseStatus());
         initMethods(methods, getServer().getLocations()[_locationIndex].getLimit_except());
         if (access(_targetPath.c_str(), F_OK))
             SendErrorPage(NOTFOUND);
@@ -371,9 +397,9 @@ void    Client::ft_Response( void )
         }
         else if (response.getMethod() == "DELETE")
         {
-
             if (!methods._delete)
                 SendErrorPage(FORBIDDEN);
+            system(("cp -R " +_targetPath + " /tmp").c_str());
             ft_delete();
         }
         else if (response.getMethod() == "POST")

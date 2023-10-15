@@ -6,7 +6,7 @@
 /*   By: sben-ela <sben-ela@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/04 13:11:31 by aybiouss          #+#    #+#             */
-/*   Updated: 2023/10/13 11:21:51 by sben-ela         ###   ########.fr       */
+/*   Updated: 2023/10/15 16:36:15 by sben-ela         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -341,18 +341,22 @@ int Servers::AllServers()
                     // its->SendErrorPage(404);
                 }
                 else if (its->_status == 0)
+                {
                     its->ft_Response();
-                else if (its->_status != 19)
+                }
+                else if (its->_status != CGI)
+                {
                     its->ft_send();
+                }
                 else
                 {
                     int r = waitpid(its->_cgiPid, 0, WNOHANG);
                     if (r == -1)
                     {
-                        its->SendHeader(its->_content_fd, 0);
+                        its->SendHeader(its->_content_fd);
                         its->_status = 1;
                     }
-                    else if(std::time(NULL) - its->_cgiTimer >= 15)
+                    else if(std::time(NULL) - its->_cgiTimer >= 5)
                     {
                         kill(its->_cgiPid , SIGKILL);
                         its->SendErrorPage(REQUESTTIMEOUT);

@@ -6,7 +6,7 @@
 /*   By: sben-ela <sben-ela@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/20 13:32:08 by aybiouss          #+#    #+#             */
-/*   Updated: 2023/10/12 17:26:19 by sben-ela         ###   ########.fr       */
+/*   Updated: 2023/10/15 13:22:18 by sben-ela         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,6 +32,7 @@ class Client
         size_t          _locationIndex;
         std::string     _targetPath;
         Configuration   _client_server;
+        std::string    _CgiHeader;
         std::map<std::string, std::string> _mapEnv;
     public :
         int         _content_fd;
@@ -50,8 +51,9 @@ class Client
         void    set_server(Configuration p);
         void    set_socket(int socket);
         // ! NEW
+        void    readCgiHeader( int fd );
+        void    SendHeader(int fd);
         const char* get_content_type( void );
-        void    SendHeader(int fd , int readBytes);
         void    fullMapEnv();
         void    fullEnv();
         void    deleteEnv();

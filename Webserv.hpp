@@ -6,7 +6,7 @@
 /*   By: sben-ela <sben-ela@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/26 16:22:49 by sben-ela          #+#    #+#             */
-/*   Updated: 2023/10/12 17:12:18 by sben-ela         ###   ########.fr       */
+/*   Updated: 2023/10/15 13:21:01 by sben-ela         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -125,6 +125,6 @@ void sig_handler(int sig);
 #define SERVICEUNAVAILABLE 503
 #define GATEWAYTIMEOUT 504
 #define HTTPVERSIONNOTSUPPORTED 505
-
+#define CGI 19
 
 void ft_close(int fd);
