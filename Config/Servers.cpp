@@ -6,7 +6,7 @@
 /*   By: sben-ela <sben-ela@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/04 13:11:31 by aybiouss          #+#    #+#             */
-/*   Updated: 2023/10/15 16:36:15 by sben-ela         ###   ########.fr       */
+/*   Updated: 2023/10/15 21:41:16 by sben-ela         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -291,9 +291,7 @@ int Servers::AllServers()
                     if (strstr(buffer, FAVICON_PATH.c_str()) == NULL)
                     {
                         its->_isFavicon = false;
-                        // std::cout << "*****************" << std::endl;
-                        // std::cout << buf << std::endl;
-                        // std::cout << "*****************" << std::endl;
+    
                         if (!its->response.parseHttpRequest(buf)) // la 9ra kolchi
                         {
                             FD_CLR(its->GetSocketId(), &read_fds);
