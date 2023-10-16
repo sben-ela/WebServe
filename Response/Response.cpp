@@ -6,7 +6,7 @@
 /*   By: sben-ela <sben-ela@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/17 11:36:51 by sben-ela          #+#    #+#             */
-/*   Updated: 2023/10/16 13:20:38 by sben-ela         ###   ########.fr       */
+/*   Updated: 2023/10/16 14:53:12 by sben-ela         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -91,13 +91,11 @@ std::string getFileName(const std::string& path, size_t first)
 {
 
     std::string fileName = path.substr(first);
-    std::cout << "FILE NAME : " <<  "/" + fileName << std::endl;
     return("/" + fileName);
 }
 
 void    Client::SendErrorPage(int errorNumber)
 {
-    std::cout << "ERROR : " << errorNumber << std::endl;
     std::stringstream ss;
     struct stat statbuffer;
     char buff[BUFFER_SIZE];
