@@ -6,7 +6,7 @@
 /*   By: sben-ela <sben-ela@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/17 11:36:51 by sben-ela          #+#    #+#             */
-/*   Updated: 2023/10/15 22:22:14 by sben-ela         ###   ########.fr       */
+/*   Updated: 2023/10/16 13:20:38 by sben-ela         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -165,6 +165,14 @@ void    Client::SendHeader(int fd)
     send(GetSocketId(), header.c_str(), header.size(), 0);
 }
 
+// void ft_time(void)
+// {
+// 	struct timeval	t;
+
+// 	gettimeofday(&t, NULL);
+//     std::cout << "Seconds : " << t.tv_sec << " Micro : " << t.tv_usec  << std::endl;
+// }
+
 /// @brief GET method
 void    Client::Reply( void )
 {
@@ -175,16 +183,16 @@ void    Client::Reply( void )
     if (response.GetFileExtention() == ".php" || response.GetFileExtention() == ".py")
     {
         fullEnv();
-        std::string outfile = GenerateFile();
+        _CgiFile = GenerateFile();
         _cgiPid = fork();
         if (!_cgiPid)
         {
             std::map<std::string, std::string> intrepreter = getServer().getCgi();
             std::string filePath  = _targetPath.c_str();
             char *Path[3] = {(char*)intrepreter[response.GetFileExtention()].c_str(), (char *)filePath.c_str(), NULL};
-            fd = open (outfile.c_str(), O_CREAT | O_RDWR | O_TRUNC, 0666);
+            fd = open (_CgiFile.c_str(), O_CREAT | O_RDWR | O_TRUNC, 0666);
             if (fd < 0)
-                throw(std::runtime_error("Open Failed in child to open : " + outfile));
+                throw(std::runtime_error("Open Failed in child to open : " + _CgiFile));
             dup2(fd, 1);
             ft_close(fd);
             if (response.getMethod() == "POST")
@@ -193,22 +201,15 @@ void    Client::Reply( void )
                 dup2(bodyFd, 0);
                 ft_close(bodyFd);
             }
-            execve(Path[0], Path, _env);// ! ENV
+            execve(Path[0], Path, _env);
             deleteEnv();
             std::cout << "ERRRRORRR" << std::endl;
             exit(EXFIALE);
         }
-        deleteEnv();
         _status = CGI;
         _cgiTimer = std::time(NULL);
-        fd = open (outfile.c_str(), O_RDONLY);
-        if (fd < 0)
-            throw(std::runtime_error("Open Failed to open : " + outfile ));
-        _CgiHeader.clear();
-        if (response.GetFileExtention() == ".php")
-            readCgiHeader(fd);
-        std::cout << _CgiHeader << std::endl;
-        _content_fd = fd;
+        // deleteEnv();
+
         return ;
     }
     else
@@ -301,7 +302,10 @@ void    Client::readCgiHeader( int fd )
 
     rd = read(fd, buff, BUFFER_SIZE - 1);
     if (rd <= 0)
+    {
+        perror("READ : ");
         return ;
+    }
     buff[rd] = 0;
     _CgiHeader = buff;
     pos = _CgiHeader.find("\r\n\r\n");

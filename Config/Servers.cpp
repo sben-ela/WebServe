@@ -6,7 +6,7 @@
 /*   By: sben-ela <sben-ela@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/04 13:11:31 by aybiouss          #+#    #+#             */
-/*   Updated: 2023/10/15 21:41:16 by sben-ela         ###   ########.fr       */
+/*   Updated: 2023/10/16 13:05:33 by sben-ela         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -351,6 +351,12 @@ int Servers::AllServers()
                     int r = waitpid(its->_cgiPid, 0, WNOHANG);
                     if (r == -1)
                     {
+                        its->_content_fd = open (its->_CgiFile.c_str(), O_RDONLY);
+                        if (its->_content_fd < 0)
+                            throw(std::runtime_error("Open Failed to open : " + its->_CgiFile ));
+                        its->_CgiHeader.clear();
+                        if (its->response.GetFileExtention() == ".php")
+                            its->readCgiHeader(its->_content_fd);
                         its->SendHeader(its->_content_fd);
                         its->_status = 1;
                     }

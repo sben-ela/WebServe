@@ -6,7 +6,7 @@
 /*   By: sben-ela <sben-ela@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/20 13:32:08 by aybiouss          #+#    #+#             */
-/*   Updated: 2023/10/15 13:22:18 by sben-ela         ###   ########.fr       */
+/*   Updated: 2023/10/16 12:51:54 by sben-ela         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,9 +32,10 @@ class Client
         size_t          _locationIndex;
         std::string     _targetPath;
         Configuration   _client_server;
-        std::string    _CgiHeader;
         std::map<std::string, std::string> _mapEnv;
     public :
+        std::string _CgiHeader;
+        std::string _CgiFile;
         int         _content_fd;
         int         _status;
         std::time_t _cgiTimer;
