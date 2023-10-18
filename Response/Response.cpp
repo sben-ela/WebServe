@@ -6,7 +6,7 @@
 /*   By: sben-ela <sben-ela@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/17 11:36:51 by sben-ela          #+#    #+#             */
-/*   Updated: 2023/10/18 13:06:11 by sben-ela         ###   ########.fr       */
+/*   Updated: 2023/10/18 17:22:32 by sben-ela         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -139,7 +139,6 @@ void    Client::SendHeader(int fd)
     fstat(fd, &statbuffer);
     ss << statbuffer.st_size - _CgiHeader.size();
     header = response.getHttpVersion() + response.getStatusCode()[response.getResponseStatus()] + "\r\nContent-Type: " + get_content_type() + "\r\nContent-Length: " + ss.str() + "\r\n\r\n";
-	std::cout << "|" << header << "|" << std::endl;
     write(GetSocketId(), header.c_str(), header.size());
 }
 
@@ -167,8 +166,6 @@ void    Client::Reply( void )
             _content_fd = open (_CgiFile.c_str(), O_CREAT | O_RDWR | O_TRUNC, 0666);
             if (_content_fd < 0)
                 throw(std::runtime_error("Open Failed in child to open : " + _CgiFile));
-            for (int i = 0; Path[i]; i++)
-                std::cout << "PATH : " << Path[i] << std::endl;
             dup2(_content_fd, 1);
             ft_close(_content_fd);
             if (response.getMethod() == "POST")
@@ -355,7 +352,7 @@ void    Client::ft_Response( void )
         initLocationIndex();
         setTargetPath();
         initMethods(methods, getServer().getLocations()[_locationIndex].getLimit_except());
-            std::cout << "TARGET : " << _targetPath << std::endl;
+        std::cout << "TARGET : " << _targetPath << std::endl;
         if (access(_targetPath.c_str(), F_OK))
         {
             // exit(0);
@@ -390,10 +387,9 @@ void    Client::ft_Response( void )
                 handleDirectory(_targetPath);
             else
                 Reply();
-            // SendErrorPage(CREATED);
         }
         else 
-            _readStatus = -1;
+            SendErrorPage(NOTIMPLEMENTED);
     }
     catch(std::exception &e)
     {
