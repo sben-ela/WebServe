@@ -6,7 +6,7 @@
 /*   By: sben-ela <sben-ela@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/04 13:11:31 by aybiouss          #+#    #+#             */
-/*   Updated: 2023/10/16 13:05:33 by sben-ela         ###   ########.fr       */
+/*   Updated: 2023/10/18 00:31:47 by sben-ela         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -288,6 +288,7 @@ int Servers::AllServers()
                 else
                 {
                     std::string buf(buffer, bytesRead);
+                    std::cout << buf << std::endl;
                     if (strstr(buffer, FAVICON_PATH.c_str()) == NULL)
                     {
                         its->_isFavicon = false;
@@ -333,7 +334,7 @@ int Servers::AllServers()
                         throw(std::runtime_error(" write failed in sendErrorpage"));
                     int rd = read(efd, buff, BUFFER_SIZE);
                     buff[rd] = '\0';
-                    write(its->GetSocketId(), buff, BUFFER_SIZE);
+                    write(its->GetSocketId(), buff, rd);
                     its->_readStatus = -1;
                     std::cout << " IS FAVICON : " << its->response.getHttpVersion() << std::endl;
                     // its->SendErrorPage(404);

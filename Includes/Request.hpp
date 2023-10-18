@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Request.hpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: aybiouss <aybiouss@student.1337.ma>        +#+  +:+       +#+        */
+/*   By: sben-ela <sben-ela@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/04 17:07:10 by aybiouss          #+#    #+#             */
-/*   Updated: 2023/10/10 14:58:19 by aybiouss         ###   ########.fr       */
+/*   Updated: 2023/10/17 13:46:25 by sben-ela         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,10 +20,10 @@ class Request
         std::string     _method;
         std::string     _path;
         std::string     _httpVersion;
-        int     _responseStatus;
+        int             _responseStatus;
         std::string    _header_before;
         std::vector<char>     _body;
-        std::map<std::string, std::string> _headers;
+        std::map<std::string, std::string>  _headers;
         std::map<int, std::string>          _statusCode;
         std::string     _contentType;
         const char*     _bodyFile;
@@ -43,6 +43,7 @@ class Request
         unsigned long         _total;
         bool                  _chunked;
     public:
+        std::string           _name;
         Request();
         Request(const Request& other);
         Request& operator=(const Request& other);
@@ -71,5 +72,6 @@ class Request
         void                       CreateStatusCode( void );
         void                       processMultiPart(std::string content);
         std::string                ft_temp( void ) const;
+        const std::map<std::string, std::string>& getHeaders( void ) const;
         ~Request();
 };

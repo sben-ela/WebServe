@@ -6,13 +6,13 @@
 /*   By: sben-ela <sben-ela@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/20 13:32:21 by aybiouss          #+#    #+#             */
-/*   Updated: 2023/10/13 11:32:47 by sben-ela         ###   ########.fr       */
+/*   Updated: 2023/10/17 18:37:45 by sben-ela         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../Includes/Client.hpp"
 
-Client::Client() : _status(0) {
+Client::Client() : _status(0){
     _isFavicon = false;
 }
 
@@ -62,9 +62,30 @@ const Configuration&      Client::getServer( void ) const
 
 void    Client::fullMapEnv()
 {
-    _mapEnv["CONTENT_TYPE"] = get_content_type();
+    struct stat statbuffer;
+    std::stringstream ss;
+
+    fstat(response.getFd(), &statbuffer);
+    ss << statbuffer.st_size;
+    _mapEnv["REDIRECT_STATUS"] = "100";
+    _mapEnv["REQUEST_METHOD"] = response.getMethod();
+    _mapEnv["CONTENT_TYPE"] = "application/x-www-form-urlencoded";
     _mapEnv["QUERY_STRING"] = response.getQueryString();
     _mapEnv["PATH_INFO"] = response.getPath(); 
+    _mapEnv["SCRIPT_FILENAME"] = _targetPath;
+    _mapEnv["CONTENT_LENGHT"] = ss.str();
+    for (std::map<std::string, std::string>::const_iterator it = response.getHeaders().begin(); it != response.getHeaders().end(); it++)
+    {
+        if (it->first == "Content-Length")
+            _mapEnv["CONTENT_LENGHT"] = it->second; 
+        else
+            _mapEnv["HTTP_" + it->first] = it->second;
+    }
+    std::cout << "-------------------------------------------------------------------" << std::endl;
+    for (std::map<std::string, std::string>::const_iterator it = _mapEnv.begin(); it != _mapEnv.end(); it++)
+    {
+        std::cout << it->first << "=" << it->second << std::endl;
+    }
 }
 
 void    Client::fullEnv()
@@ -94,7 +115,6 @@ const char* Client::get_content_type( void )
     if (last_dot)
     {
         if (strcmp(last_dot, ".css") == 0) return "text/css";
-        if (strcmp(last_dot, ".csv") == 0) return "text/csv";
         if (strcmp(last_dot, ".gif") == 0) return "image/gif";
         if (strcmp(last_dot, ".htm") == 0) return "text/html";
         if (strcmp(last_dot, ".html") == 0) return "text/html";
@@ -105,11 +125,9 @@ const char* Client::get_content_type( void )
         if (strcmp(last_dot, ".js") == 0) return "application/javascript";
         if (strcmp(last_dot, ".json") == 0) return "application/json";
         if (strcmp(last_dot, ".png") == 0) return "image/png";
-        if (strcmp(last_dot, ".pdf") == 0) return "application/pdf";
-        if (strcmp(last_dot, ".svg") == 0) return "image/svg+xml";
         if (strcmp(last_dot, ".txt") == 0) return "text/plain";
-        if (strcmp(last_dot, ".py") == 0) return "text/plain";
-        if (strcmp(last_dot, ".php") == 0) return "text/plain";
+        if (strcmp(last_dot, ".py") == 0) return "text/html";
+        if (strcmp(last_dot, ".php") == 0) return "text/html";
     }
     return ("text/plain");
 }

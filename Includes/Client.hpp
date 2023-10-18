@@ -6,7 +6,7 @@
 /*   By: sben-ela <sben-ela@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/20 13:32:08 by aybiouss          #+#    #+#             */
-/*   Updated: 2023/10/16 12:51:54 by sben-ela         ###   ########.fr       */
+/*   Updated: 2023/10/17 17:27:37 by sben-ela         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,6 +34,7 @@ class Client
         Configuration   _client_server;
         std::map<std::string, std::string> _mapEnv;
     public :
+        // size_t      _content
         std::string _CgiHeader;
         std::string _CgiFile;
         int         _content_fd;
@@ -54,6 +55,7 @@ class Client
         // ! NEW
         void    readCgiHeader( int fd );
         void    SendHeader(int fd);
+        const std::stringstream&    getFileSize(int fd);
         const char* get_content_type( void );
         void    fullMapEnv();
         void    fullEnv();

@@ -6,14 +6,14 @@
 /*   By: sben-ela <sben-ela@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/05 09:27:53 by aybiouss          #+#    #+#             */
-/*   Updated: 2023/10/12 18:51:09 by sben-ela         ###   ########.fr       */
+/*   Updated: 2023/10/18 00:55:47 by sben-ela         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../Includes/Request.hpp"
 
 Request::Request() : _transferEncodingChunked(false), _transferEncoding(false), _contentLength(false), _headers_done(false), _condition(false), _chunked(false) {
-    _responseStatus = 0;
+    _responseStatus = 200;
     _total = 0;
 }
 
@@ -133,7 +133,7 @@ std::string Request::GenerateFile() {
     std::string randomString = GenerateRandomString(6); // 6 characters for the filename
     std::string timestamp = GenerateTimestamp();
 
-    const char* dir_path = "/Users/sben-ela/goinfre/";
+    const char* dir_path = "/Users/sben-ela/Desktop/WebServe/data/Post/";
 
     if (mkdir(dir_path, 0777) != 0 && errno != EEXIST) {
         std::cerr << "Failed to create directory: " << strerror(errno) << std::endl;
@@ -202,6 +202,8 @@ int    Request::processBody()
         {
             std::cout << "Body ended ..." << std::endl;
             setResponseStatus(200);
+            close(_fd);
+            _fd = open(_name.c_str(), O_RDWR);
             return 0;
         }
         if (_bodies.length() >= chunksize + 2 + crlf_pos + 2)
@@ -213,11 +215,18 @@ int    Request::processBody()
             {
                 std::cout << "Body ended ..." << std::endl;
                 setResponseStatus(200);
+                close(_fd);
+                _fd = open(_name.c_str(), O_RDWR);
                 return 0;
             }
         }
     }
     return 1;
+}
+
+const std::map<std::string, std::string>& Request::getHeaders( void ) const
+{
+    return(_headers);
 }
 
 int    Request::parseHeaders()
@@ -345,8 +354,9 @@ int    Request::parseHeaders()
     else if (_method == "POST")
     {
         std::string extension = ft_temp(); /// ! bdelha
-        std::string name = GenerateFile() + extension;
-        _fd = open(name.c_str(), O_WRONLY | O_APPEND | O_CREAT, 0666);
+        _name = GenerateFile() + extension;
+        std::cout << "IN REQUEST : " << _name.c_str() << std::endl;
+        _fd = open(_name.c_str(), O_RDWR | O_APPEND | O_CREAT, 0666);
         std::cout << "File created with number : " << _fd << std::endl;
         if (_fd == -1) {
             std::cerr << "Failed to open the file." << std::endl;
@@ -380,6 +390,10 @@ int Request::processAllBody()
         return 1;
     }
     setResponseStatus(200);
+    std::cout << "File descriptopor  ALlBODY : " << _fd << std::endl;
+    close(_fd);
+    _fd = open(_name.c_str(), O_RDWR);
+    std::cout << "File descriptopor  ALlBODY after : " << _fd << std::endl;
     return 0;
 }
 
@@ -425,7 +439,8 @@ Request::Request(const Request& other)
         _condition(other._condition),
         _length(other._length),
         _total(other._total),
-        _chunked(other._chunked) {}
+        _chunked(other._chunked),
+        _name(other._name) {}
 
 Request& Request::operator=(const Request& other)
 {
@@ -456,6 +471,7 @@ Request& Request::operator=(const Request& other)
         _length = other._length;
         _total = other._total;
         _chunked = other._chunked;
+        _name = other._name;
     }
     return *this;
 }

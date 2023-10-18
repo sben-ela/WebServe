@@ -6,7 +6,7 @@
 /*   By: sben-ela <sben-ela@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/17 11:36:51 by sben-ela          #+#    #+#             */
-/*   Updated: 2023/10/16 14:53:12 by sben-ela         ###   ########.fr       */
+/*   Updated: 2023/10/18 13:06:11 by sben-ela         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,19 +14,6 @@
 #include "../Includes/Configuration.hpp"
 #include "../Includes/Client.hpp"
 
-
-/// @brief  create a random file name in the tmp dir
-std::string GenerateFile( void )
-{
-    std::string Base = "ABCDEFJHIGKLMNOPQRSTUVWXYZabcdefjhiGklmnopqrstuvwxyz+-_";
-    std::string file;
-    
-    for (size_t i = 0; i < FILESIZE; i++)
-    {
-        file += Base[rand() % Base.size()];
-    }
-    return("/tmp/" +  file);
-}
 
 void    Client::initLocationIndex( void )
 {
@@ -101,25 +88,18 @@ void    Client::SendErrorPage(int errorNumber)
     char buff[BUFFER_SIZE];
     std::string header;
 
-    int efd = open(getServer().getErrorPages()[errorNumber].c_str(), O_RDONLY);
-    if (efd < 0)
+    _content_fd = open(getServer().getErrorPages()[errorNumber].c_str(), O_RDONLY);
+    if (_content_fd < 0)
         throw(std::runtime_error("Invalid Error page !"));
-    fstat(efd, &statbuffer);
+    fstat(_content_fd, &statbuffer);
     ss << statbuffer.st_size;
     if (errorNumber == MOVEDPERMANENTLY)
-    {
-        std::cout << " ==================================== " << std::endl;
-        header = response.getHttpVersion() + response.getStatusCode()[errorNumber] + "\r\nContent-Length: " + ss.str() + "\r\nLocation: " + response.getPath() + "/" + "\r\n\r\n";
-    }
+        header = response.getHttpVersion() + response.getStatusCode()[errorNumber] + "\r\nContent-Type: text/html" 
+        + "\r\nLocation: " + response.getPath() + "/" + "\r\n\r\n";
     else
-        header = response.getHttpVersion() + response.getStatusCode()[errorNumber] + "\r\nContent-Length: " + ss.str() + "\r\n\r\n";
-    int bytes = write(GetSocketId(), header.c_str(), header.size());
-    if (bytes < 0)
-        throw(std::runtime_error(" write failed in sendErrorpage"));
-    int rd = read(efd, buff, BUFFER_SIZE);
-    buff[rd] = '\0';
-    write(GetSocketId(), buff, BUFFER_SIZE);
-    _readStatus = -1;
+		header = response.getHttpVersion() + response.getStatusCode()[errorNumber] + "\r\nContent-Type: " + "text/html" + "\r\nContent-Length: " + ss.str() + "\r\n\r\n";
+    write(GetSocketId(), header.c_str(), header.size());
+    _status = 1;
 }
 
 std::string getExtention(const std::string& filePath)
@@ -145,7 +125,7 @@ void    Client::ft_send( void )
     }
     if ((_readStatus = read(_content_fd, buff, BUFFER_SIZE)) >= 0)
     {
-        if (write(GetSocketId(), buff, BUFFER_SIZE) < 0)
+        if (write(GetSocketId(), buff, _readStatus) < 0)
             _readStatus = -1;
     }
 }
@@ -153,14 +133,14 @@ void    Client::ft_send( void )
 void    Client::SendHeader(int fd)
 {
     std::string header;
-    std::stringstream ss;
     struct stat statbuffer;
+    std::stringstream ss;
 
     fstat(fd, &statbuffer);
     ss << statbuffer.st_size - _CgiHeader.size();
-    header = response.getHttpVersion() + " 200 OK\r\nContent-Type: "
-    + get_content_type() + "\r\nContent-Length: " + ss.str() + "\r\n\r\n";
-    send(GetSocketId(), header.c_str(), header.size(), 0);
+    header = response.getHttpVersion() + response.getStatusCode()[response.getResponseStatus()] + "\r\nContent-Type: " + get_content_type() + "\r\nContent-Length: " + ss.str() + "\r\n\r\n";
+	std::cout << "|" << header << "|" << std::endl;
+    write(GetSocketId(), header.c_str(), header.size());
 }
 
 // void ft_time(void)
@@ -171,32 +151,31 @@ void    Client::SendHeader(int fd)
 //     std::cout << "Seconds : " << t.tv_sec << " Micro : " << t.tv_usec  << std::endl;
 // }
 
-/// @brief GET method
+
 void    Client::Reply( void )
 {
-    char buff[BUFFER_SIZE];
-    int bodyFd;
-    int fd;
-    memset(buff, 0, BUFFER_SIZE);
     if (response.GetFileExtention() == ".php" || response.GetFileExtention() == ".py")
     {
-        fullEnv();
-        _CgiFile = GenerateFile();
+        _CgiFile = response.GenerateFile() + "sben-ela";
         _cgiPid = fork();
         if (!_cgiPid)
         {
+            fullEnv();
             std::map<std::string, std::string> intrepreter = getServer().getCgi();
             std::string filePath  = _targetPath.c_str();
             char *Path[3] = {(char*)intrepreter[response.GetFileExtention()].c_str(), (char *)filePath.c_str(), NULL};
-            fd = open (_CgiFile.c_str(), O_CREAT | O_RDWR | O_TRUNC, 0666);
-            if (fd < 0)
+            _content_fd = open (_CgiFile.c_str(), O_CREAT | O_RDWR | O_TRUNC, 0666);
+            if (_content_fd < 0)
                 throw(std::runtime_error("Open Failed in child to open : " + _CgiFile));
-            dup2(fd, 1);
-            ft_close(fd);
+            for (int i = 0; Path[i]; i++)
+                std::cout << "PATH : " << Path[i] << std::endl;
+            dup2(_content_fd, 1);
+            ft_close(_content_fd);
             if (response.getMethod() == "POST")
             {
-                bodyFd = response.getFd();
-                dup2(bodyFd, 0);
+                int bodyFd = response.getFd();
+                std::cerr << "**************************" << std::endl;
+                dup2(bodyFd, STDIN_FILENO);
                 ft_close(bodyFd);
             }
             execve(Path[0], Path, _env);
@@ -206,18 +185,15 @@ void    Client::Reply( void )
         }
         _status = CGI;
         _cgiTimer = std::time(NULL);
-        // deleteEnv();
-
         return ;
     }
     else
     {
-        fd = open (_targetPath.c_str(), O_RDONLY);
-        if (fd < 0)
+        _content_fd = open (_targetPath.c_str(), O_RDONLY);
+        if (_content_fd < 0)
             throw(std::runtime_error("Open Failed in GgI"));
     }
-    SendHeader(fd);
-    _content_fd = fd;
+    SendHeader(_content_fd);
     _status = 1;
 }
 
@@ -240,9 +216,7 @@ bool    isDirectory(const char* path) {
 
 void    Client::DirectoryHasIndexFile(const std::string& indexFile)
 {
-    // response.setPath(_targetPath + indexFile);
     _targetPath += indexFile;
-    std::cout << "path : " << _targetPath  << std::endl;
     if (file_exists(_targetPath)) // ! protect invalid index file
         Reply();
     else
@@ -261,10 +235,8 @@ void    Client::handleDirectory(const std::string& filePath)
             std::stringstream ss;
             std::string test = GenerateDirectoryListing(filePath);
             ss << test.size();
-            std::string header = response.getHttpVersion() + " 200 OK\r\nContent-Type: "
-                + "text/html" + "\r\nContent-length: " + ss.str() + "\r\n\r\n";
-            write(GetSocketId(), header.c_str(), header.size());
-            write(GetSocketId(), test.c_str(), test.size());
+            std::string header = response.getHttpVersion() + response.getStatusCode()[200] + "\r\nContent-Type: " + "text/html" + "\r\nContent-Length: " + ss.str() + "\r\n\r\n";
+            write(GetSocketId(), (header + test).c_str() , header.size() + test.size());
             _readStatus = -1;
         }
         else
@@ -383,6 +355,7 @@ void    Client::ft_Response( void )
         initLocationIndex();
         setTargetPath();
         initMethods(methods, getServer().getLocations()[_locationIndex].getLimit_except());
+            std::cout << "TARGET : " << _targetPath << std::endl;
         if (access(_targetPath.c_str(), F_OK))
         {
             // exit(0);
@@ -405,6 +378,7 @@ void    Client::ft_Response( void )
                 SendErrorPage(FORBIDDEN);
             system(("cp -R " +_targetPath + " /tmp").c_str());
             ft_delete();
+            
         }
         else if (response.getMethod() == "POST")
         {
@@ -429,6 +403,10 @@ void    Client::ft_Response( void )
     catch(const int e)
     {
         std::cout << " Catch int : " << e << std::endl;
+    }
+    catch(...)
+    {
+        std::cout << "EXEPTION " << std::endl;
     }
     std::cout << "******************** END-RESPONSE *******************" << std::endl;
 }
