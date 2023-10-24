@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Client.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: sben-ela <sben-ela@student.42.fr>          +#+  +:+       +#+        */
+/*   By: aybiouss <aybiouss@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/20 13:32:08 by aybiouss          #+#    #+#             */
-/*   Updated: 2023/10/17 17:27:37 by sben-ela         ###   ########.fr       */
+/*   Updated: 2023/10/23 18:08:31 by aybiouss         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,7 +34,8 @@ class Client
         Configuration   _client_server;
         std::map<std::string, std::string> _mapEnv;
     public :
-        // size_t      _content
+        std::vector<Configuration>  _duplicated_servers;
+        std::map<int, std::string> _defaultErrorPages;
         std::string _CgiHeader;
         std::string _CgiFile;
         int         _content_fd;
@@ -45,6 +46,10 @@ class Client
         Methods     methods;
         bool        _isFavicon;
         Response    response;
+        bool    _contentType;
+        int     _childExitStatus;
+        int     _waitStatus;
+        bool    _contentLenght;
         Client();
         Client(const Client& other);
         Client& operator=(const Client& other);
@@ -52,11 +57,13 @@ class Client
         const Configuration&      getServer() const;
         void    set_server(Configuration p);
         void    set_socket(int socket);
-        // ! NEW
+        std::string getCookie( void );
+        std::string GenerateDirectoryListing(const std::string& directoryPath);
+        void    initDefaultErrorPages( void );
         void    readCgiHeader( int fd );
         void    SendHeader(int fd);
         const std::stringstream&    getFileSize(int fd);
-        const char* get_content_type( void );
+    std::string get_content_type( void );
         void    fullMapEnv();
         void    fullEnv();
         void    deleteEnv();
@@ -71,6 +78,7 @@ class Client
         void    Reply( void );
         void    ft_send( void );
         void    ft_Response( void );
+        std::string findKey(const std::string &key);
         // !
         ~Client();
 };

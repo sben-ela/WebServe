@@ -3,19 +3,17 @@
 /*                                                        :::      ::::::::   */
 /*   Webserv.hpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: sben-ela <sben-ela@student.42.fr>          +#+  +:+       +#+        */
+/*   By: aybiouss <aybiouss@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/26 16:22:49 by sben-ela          #+#    #+#             */
-/*   Updated: 2023/10/15 13:21:01 by sben-ela         ###   ########.fr       */
+/*   Updated: 2023/10/23 18:13:02 by aybiouss         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
-
-
 
 #pragma once
 
 #define PORT 7070 // Where the clients can reach at
-#define MAX_CLIENTS 10 // Maximum number of clients to handle
+#define MAX_CLIENTS 100 // Maximum number of clients to handle
 #include <csignal>
 #include <vector>
 #include <stdio.h>
@@ -126,5 +124,8 @@ void sig_handler(int sig);
 #define GATEWAYTIMEOUT 504
 #define HTTPVERSIONNOTSUPPORTED 505
 #define CGI 19
-
+#define TIMEOUT 10
 void ft_close(int fd);
+
+
+// ! SIGKIL vs SIGTERM https://linuxhandbook.com/sigterm-vs-sigkill/
