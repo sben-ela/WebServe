@@ -10,7 +10,7 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "./Includes/Servers.hpp"
+#include "../Includes/Servers.hpp"
 //testing !!
 
 void sig_handler(int sig) {
@@ -26,7 +26,7 @@ int main(int argc, char *argv[])
             signal(SIGINT, sig_handler);
             Servers configFile;
             std::string		config;
-            config = (argc == 1 ? "default.conf" : argv[1]);
+            config = (argc == 1 ? "configuration/default.conf" : argv[1]);
             configFile.ConfigFileParse(config);
         }
         catch (std::string& e)

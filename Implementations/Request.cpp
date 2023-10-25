@@ -204,7 +204,7 @@ int    Request::processBody()
         if (_bodies.length() >= chunksize + 2 + crlf_pos + 2)
         {
             std::string str = _bodies.substr(crlf_pos + 2, chunksize);
-            write(_fd, str.c_str(), chunksize);
+            write(_fd, str.c_str(), chunksize); //! khas tprotiktra
             _bodies = _bodies.substr(chunksize + 2 + crlf_pos + 2);
             if (_bodies == "0\r\n\r\n")
             {
@@ -361,7 +361,7 @@ int    Request::parseHeaders()
 
 int Request::processAllBody()
 {
-    write(_fd, _bodies.c_str(), _bodies.length());
+    write(_fd, _bodies.c_str(), _bodies.length()); /// ! khas tprotekta
     _total += _bodies.length();
     std::cout << _total << "|" << _length << std::endl;
     if (_total < _length)

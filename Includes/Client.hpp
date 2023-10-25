@@ -12,7 +12,7 @@
 
 #pragma once
 
-#include "../Webserv.hpp"
+#include "../Includes/Webserv.hpp"
 #include "Configuration.hpp"
 #include "Response.hpp"
 
@@ -42,7 +42,7 @@ class Client
         int         _status;
         std::time_t _cgiTimer;
         int         _cgiPid;
-        ssize_t     _readStatus;
+        ssize_t     _responseStatus;
         Methods     methods;
         bool        _isFavicon;
         Response    response;

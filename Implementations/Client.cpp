@@ -36,7 +36,7 @@ Client::Client(const Client &other)
     if (this != &other)
     {
         this->_socketId = other._socketId;
-        _readStatus = other._readStatus;
+        _responseStatus = other._responseStatus;
         this->_client_server = other._client_server;
         _status = other._status;
         this->response = other.response;
@@ -51,7 +51,7 @@ Client &Client::operator=(const Client &other)
     if (this != &other)
     {
         this->_socketId = other._socketId;
-        _readStatus = other._readStatus;
+        _responseStatus = other._responseStatus;
         _status = other._status;
         this->_client_server = other._client_server;
         this->response = other.response;
@@ -93,14 +93,6 @@ void Client::fullMapEnv()
         }
         else
             _mapEnv["HTTP_" + it->first] = it->second;
-    }
-
-    std::cout << "-------------------------------------------------------------------" << std::endl;
-    int fd = open("txt", O_CREAT | O_RDWR | O_APPEND, 0666);
-    for (std::map<std::string, std::string>::const_iterator it = _mapEnv.begin(); it != _mapEnv.end(); it++)
-    {
-        write(fd, (it->first + "=" + it->second).c_str(), (it->first + "=" + it->second).size());
-        write(fd, "\n", 1);
     }
 }
 

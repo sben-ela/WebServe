@@ -348,7 +348,7 @@ int Servers::AllServers()
             conditions = true; // khliha
             if (FD_ISSET(its->GetSocketId(), &tmp_write))
             {
-                its->_readStatus = -2;
+                its->_responseStatus = -2;
                 // if (its->_isFavicon)
                 // {
                 //     std::stringstream ss;
@@ -417,9 +417,9 @@ int Servers::AllServers()
                     }
                     // std::cout << "NOT TIME OUT   ====> current Time : " << std::time(NULL) << " _cgiTimer : " << its->_cgiTimer  << " result : " << std::time(NULL) - its->_cgiTimer << " TIMEOUT : " << TIMEOUT << std::endl;
                 }
-                // std::cout << its->_readStatus << std::endl;
+                // std::cout << its->_responseStatus << std::endl;
                 // std::cout << "_PID : " << its->_cgiPid << "r : " << r << std::endl;
-                if (its->_waitStatus == -1 || its->_readStatus == -1 || its->_readStatus == 0)
+                if (its->_waitStatus == -1 || its->_responseStatus == -1 || its->_responseStatus == 0)
                 {
                     FD_CLR(its->GetSocketId(), &write_fds);
                     ft_close(its->GetSocketId());
