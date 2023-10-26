@@ -43,6 +43,7 @@ class Request
         unsigned long         _total;
         bool                  _chunked;
     public:
+        size_t                _client_max_body_size;
         std::string           _value;
         std::string           _name;
         std::string           _upload;

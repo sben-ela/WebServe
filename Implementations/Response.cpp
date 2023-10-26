@@ -110,7 +110,7 @@ void    Client::SendErrorPage(int errorNumber)
     else
 		header = response.getHttpVersion() + response.getStatusCode()[errorNumber] + "\r\n" + get_content_type(error_page)
         + "\r\nContent-Length: " + ss.str() + "\r\n\r\n";
-    if (write(GetSocketId(), header.c_str(), header.size()) <= 0)
+    if (write(GetSocketId(), header.c_str(), header.size()) < 0)
         throw(std::runtime_error("write Failed"));
     _status = 1;
 }
@@ -129,10 +129,9 @@ void    Client::ft_send( void )
 
     if ((_responseStatus = read(_content_fd, buff, BUFFER_SIZE)) > 0)
     {
-        if (write(GetSocketId(), buff, _responseStatus) <= 0)
+        if (write(GetSocketId(), buff, _responseStatus) < 0)
             _responseStatus = -1;
     }
-
 }
 
 void    Client::SendHeader(int fd)
@@ -143,11 +142,12 @@ void    Client::SendHeader(int fd)
 
     fstat(fd, &statbuffer);
     ss << statbuffer.st_size - _CgiHeader.size();
+    std::cout << "path : " << _targetPath << std::endl;
     if (_status == CGI)
-        header = response.getHttpVersion() + response.getStatusCode()[response.getResponseStatus()] + "\r\n" + get_content_type(response.getPath()) + "\r\nContent-Length: " + ss.str() + (getCookie() != "\r\n" ? getCookie() : "") + "\r\n\r\n";
+        header = response.getHttpVersion() + response.getStatusCode()[response.getResponseStatus()] + "\r\n" + get_content_type(_targetPath) + "\r\nContent-Length: " + ss.str() + (getCookie() != "\r\n" ? getCookie() : "") + "\r\n\r\n";
     else
-        header = response.getHttpVersion() + response.getStatusCode()[response.getResponseStatus()] + "\r\n" + get_content_type(response.getPath()) + "\r\nContent-Length: " + ss.str() + "\r\n\r\n";
-    if (write(GetSocketId(), header.c_str(), header.size()) <= 0)
+        header = response.getHttpVersion() + response.getStatusCode()[response.getResponseStatus()] + "\r\n" + get_content_type(_targetPath) + "\r\nContent-Length: " + ss.str() + "\r\n\r\n";
+    if (write(GetSocketId(), header.c_str(), header.size()) < 0)
         throw(std::runtime_error("write Failed"));
 }
 
@@ -216,9 +216,7 @@ void    Client::DirectoryHasIndexFile(const std::string& indexFile)
     if (file_exists(_targetPath) && !isDirectory(_targetPath.c_str())) // ! protect invalid index file
         Reply();
     else
-    {
         SendErrorPage(NOTFOUND); 
-    }
 }
 
 /// @brief if the request is a directory 
@@ -234,7 +232,7 @@ void    Client::handleDirectory(const std::string& filePath)
             std::string test = GenerateDirectoryListing(filePath);
             ss << test.size();
             std::string header = response.getHttpVersion() + response.getStatusCode()[200] + "\r\nContent-Type: " + "text/html" + "\r\nContent-Length: " + ss.str() + "\r\n\r\n";
-            if (write(GetSocketId(), (header + test).c_str() , header.size() + test.size()) <= 0)
+            if (write(GetSocketId(), (header + test).c_str() , header.size() + test.size()) < 0)
                 throw(std::runtime_error("write Failed"));
             _responseStatus = -1;
         }
@@ -349,6 +347,13 @@ void    Client::ft_Response( void )
         response.CreateStatusCode();
         initLocationIndex();
         setTargetPath();
+        std::cout << "REPSONSE STATUS : " << response.getResponseStatus() << std::endl;
+        if (response.getResponseStatus() != OK)
+        {
+            SendErrorPage(response.getResponseStatus());
+            return ;
+        }
+        std::cout << "TARGET PATH : " << _targetPath << std::endl; 
         initMethods(methods, getServer().getLocations()[_locationIndex].getLimit_except());
         if (access(_targetPath.c_str(), F_OK))
             SendErrorPage(NOTFOUND);

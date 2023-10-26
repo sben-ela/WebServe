@@ -202,7 +202,11 @@ int    Request::processBody()
         if (_bodies.length() >= chunksize + 2 + crlf_pos + 2)
         {
             std::string str = _bodies.substr(crlf_pos + 2, chunksize);
-            write(_fd, str.c_str(), chunksize); //! khas tprotiktra
+            if (write(_fd, str.c_str(), chunksize) < 0)
+            {
+                setResponseStatus(500);
+                return 0;
+            }
             _bodies = _bodies.substr(chunksize + 2 + crlf_pos + 2);
             if (_bodies == "0\r\n\r\n")
             {
@@ -252,7 +256,7 @@ int    Request::parseHeaders()
         {
             if (str.find(_path[i]) == std::string::npos)
             {
-                setResponseStatus(416); // ! pdf ach kan fih ?
+                setResponseStatus(400);
                 return 0;
             }
         }
@@ -295,7 +299,7 @@ int    Request::parseHeaders()
             // Remove leading/trailing whitespaces from header values
             headerValue.erase(0, headerValue.find_first_not_of(" \t"));
             headerValue.erase(headerValue.find_last_not_of(" \t") + 1);
-            _headers[headerName] = headerValue; // ! nkhchiha with the boundary wla la
+            _headers[headerName] = headerValue;
             if (headerName == "Content-Type")
             {
                 size_t pos = headerValue.find("\r");
@@ -318,6 +322,12 @@ int    Request::parseHeaders()
             if (headerName == "Host")
                 _value = headerValue.substr(0, headerValue.length() - 1);
         }
+    }
+    if (_length > _client_max_body_size && _client_max_body_size != 0)
+    {
+        std::cout << "WTFF : " <<  _length << "   " << _client_max_body_size << std::endl;
+        setResponseStatus(413);
+        return 0;
     }
     if (_transferEncodingChunked)
     {
@@ -345,7 +355,7 @@ int    Request::parseHeaders()
             return 0;
         }
         if (!_chunked)
-            return processAllBody(); // BA9I ILA L BODY KBIIIIIIR 
+            return processAllBody();
         else
             return processBody();
     }
@@ -355,11 +365,15 @@ int    Request::parseHeaders()
         return 0;
     }
     return 1;
-} // ! request body larger than max body size 413
+}
 
 int Request::processAllBody()
 {
-    write(_fd, _bodies.c_str(), _bodies.length()); /// ! khas tprotekta
+    if (write(_fd, _bodies.c_str(), _bodies.length()) < 0)
+    {
+        setResponseStatus(500);
+        return 0;
+    }
     _total += _bodies.length();
     std::cout << _total << "|" << _length << std::endl;
     if (_total < _length)

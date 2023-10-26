@@ -257,6 +257,7 @@ int Servers::AllServers()
                 new_client.set_socket(clientSocketw);
                 new_client.set_server(it->second);
                 new_client._duplicated_servers = duplicated_servers;
+                new_client._root = it->second.getRoot();
                 new_client.initDefaultErrorPages();
                 _client.push_back(new_client);
                 if (clientSocketw > 0)
@@ -299,6 +300,8 @@ int Servers::AllServers()
                 {
                     std::string buf(buffer, bytesRead);
                     its->response._upload = its->getServer().getUpload();
+                    its->response._client_max_body_size = its->getServer().getClientMaxBodySize();
+                    std::cout << "T7IYDHA N7WIK : " <<  its->response._client_max_body_size << std::endl;
                     std::cout << buf << std::endl;
                     if (!its->response.parseHttpRequest(buf))
                     {
@@ -371,6 +374,7 @@ int Servers::AllServers()
                 }
                 if (its->_responseStatus == -1 || its->_responseStatus == 0)
                 {
+                    std::cout << "CLOSE CLIENT" << std::endl;
                     FD_CLR(its->GetSocketId(), &write_fds);
                     ft_close(its->GetSocketId());
                     ft_close(its->_content_fd);

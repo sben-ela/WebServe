@@ -50,6 +50,7 @@ class Client
         int     _childExitStatus;
         int     _waitStatus;
         bool    _contentLenght;
+        std::string         _root;
         Client();
         Client(const Client& other);
         Client& operator=(const Client& other);

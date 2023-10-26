@@ -180,10 +180,8 @@ Configuration::Configuration(std::vector<std::string> vecteur)
     {
         if (getTypePath(pages[*it2]) != 2)
         {
-    	    // if (getTypePath(this->_root + pages[*it2]) != 1) // ! hadi rah hyedtha makayen lach tchiki 3liha hitax kaynin difault 
-    	    // 	throw std::string ("Incorrect path for error page file: " + this->_root + pages[*it2]);
-    	    // if (checkFile(this->_root + pages[*it2], 0) == -1 || checkFile(this->_root + pages[*it2], 4) == -1)
-    	    // 	throw std::string ("Error page file :" + this->_root + pages[*it2] + " is not accessible");
+    	    if (checkFile(this->_root + pages[*it2], 0) == -1 || checkFile(this->_root + pages[*it2], 4) == -1)
+    	    	throw std::string ("Error page file :" + this->_root + pages[*it2] + " is not accessible");
         } // ! l3iba
     } // ! to be fixed !! 
     std::vector<Location> sortedLocations = _locations;

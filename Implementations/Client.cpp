@@ -98,22 +98,23 @@ void Client::fullMapEnv()
 
 void Client::initDefaultErrorPages(void)
 {
-    _defaultErrorPages[MOVEDPERMANENTLY] = "Errors/301.html";
-    _defaultErrorPages[NOTALLOWED] = "Errors/405.html";
-    _defaultErrorPages[BADREQUEST] = "Errors/400.html";
-    _defaultErrorPages[UNAUTHORIZED] = "Errors/401.html";
-    _defaultErrorPages[FORBIDDEN] = "Errors/403.html";
-    _defaultErrorPages[NOTFOUND] = "Errors/404.html";
-    _defaultErrorPages[REQUESTTIMEOUT] = "Errors/408.html";
-    _defaultErrorPages[CONFLICT] = "Errors/409.html";
-    _defaultErrorPages[INTERNALSERVERERROR] = "Errors/500.html";
-    _defaultErrorPages[NOTIMPLEMENTED] = "Errors/501.html";
-    _defaultErrorPages[BADGATEWAY] = "Errors/502.html";
-    _defaultErrorPages[SERVICEUNAVAILABLE] = "Errors/503.html";
-    _defaultErrorPages[GATEWAYTIMEOUT] = "Errors/504.html";
-    _defaultErrorPages[NOCONTENT] = "Errors/204.html";
-    _defaultErrorPages[CREATED] = "Errors/201.html";
-
+    _defaultErrorPages[MOVEDPERMANENTLY] = _root + "Errors/301.html";
+    _defaultErrorPages[NOTALLOWED] = _root + "Errors/405.html";
+    _defaultErrorPages[BADREQUEST] = _root + "Errors/400.html";
+    _defaultErrorPages[UNAUTHORIZED] = _root + "Errors/401.html";
+    _defaultErrorPages[FORBIDDEN] = _root + "Errors/403.html";
+    _defaultErrorPages[NOTFOUND] = _root + "Errors/404.html";
+    _defaultErrorPages[REQUESTTIMEOUT] = _root + "Errors/408.html";
+    _defaultErrorPages[CONFLICT] = _root + "Errors/409.html";
+    _defaultErrorPages[INTERNALSERVERERROR] = _root + "Errors/500.html";
+    _defaultErrorPages[NOTIMPLEMENTED] = _root + "Errors/501.html";
+    _defaultErrorPages[BADGATEWAY] = _root + "Errors/502.html";
+    _defaultErrorPages[SERVICEUNAVAILABLE] = _root + "Errors/503.html";
+    _defaultErrorPages[GATEWAYTIMEOUT] = _root + "Errors/504.html";
+    _defaultErrorPages[NOCONTENT] = _root + "Errors/204.html";
+    _defaultErrorPages[CREATED] = _root + "Errors/201.html";
+    _defaultErrorPages[CONTENTTOLARGE] = _root + "Errors/413.html";
+    _defaultErrorPages[URLTOOLONGE] = _root + "Errors/414.html";
 }
 
 std::string Client::findKey(const std::string &key)
