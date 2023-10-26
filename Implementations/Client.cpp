@@ -112,6 +112,8 @@ void Client::initDefaultErrorPages(void)
     _defaultErrorPages[SERVICEUNAVAILABLE] = "Errors/503.html";
     _defaultErrorPages[GATEWAYTIMEOUT] = "Errors/504.html";
     _defaultErrorPages[NOCONTENT] = "Errors/204.html";
+    _defaultErrorPages[CREATED] = "Errors/201.html";
+
 }
 
 std::string Client::findKey(const std::string &key)

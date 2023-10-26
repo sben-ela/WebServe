@@ -156,7 +156,6 @@ void    Client::Reply( void )
     if (response.GetFileExtention() == ".php" || response.GetFileExtention() == ".py")
     {
         _CgiFile = response.GenerateFile("/Users/sben-ela/goinfre/");
-        _status = CGI;
         _cgiTimer = std::time(NULL);
         _cgiPid = fork();
         if (!_cgiPid)
@@ -181,6 +180,7 @@ void    Client::Reply( void )
             std::cout << "ERRRRORRR" << std::endl;
             exit(EXFIALE);
         }
+        _status = CGI;
         return ;
     }
     else
@@ -245,8 +245,10 @@ void    Client::handleDirectory(const std::string& filePath)
         DirectoryHasIndexFile(getServer().getLocations()[_locationIndex].getIndex());
     else if (!getServer().getIndex().empty())
         DirectoryHasIndexFile(getServer().getIndex());
-    else
+    else if (response.getMethod() == "GET")
         SendErrorPage(FORBIDDEN);
+    else
+        SendErrorPage(CREATED);
 }
 
 /// @brief Initialize methods with their state
@@ -270,7 +272,7 @@ void    Client::readCgiHeader( int fd )
     char        buff[BUFFER_SIZE];
 
     rd = read(fd, buff, BUFFER_SIZE - 1);
-    if (rd <= 0)
+    if (rd < 0)
     {
         throw(std::runtime_error("read Failed"));
         return ;
@@ -375,7 +377,10 @@ void    Client::ft_Response( void )
         else if (response.getMethod() == "POST")
         {
             if (!methods._post)
+            {
+                std::remove(response._name.c_str());
                 SendErrorPage(FORBIDDEN);
+            }
             else if (getServer().getLocations()[_locationIndex].getUpload().empty())
                 throw(std::runtime_error("empty upload path"));
             else if (isDirectory(_targetPath.c_str()))
@@ -398,6 +403,7 @@ void    Client::ft_Response( void )
     }
     catch(...)
     {
+        _responseStatus = -1;
         std::cout << "EXEPTION " << std::endl;
     }
     std::cout << "******************** END-RESPONSE *******************" << std::endl;

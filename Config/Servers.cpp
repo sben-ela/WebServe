@@ -150,7 +150,7 @@ int Servers::AllServers()
             condition = false;
             continue ;
         }
-        struct addrinfo hints, *p, *res;
+        struct addrinfo hints, *p, *res; 
         memset(&hints, 0, sizeof(hints));
         hints.ai_family = AF_INET;
         hints.ai_socktype = SOCK_STREAM;
@@ -192,7 +192,6 @@ int Servers::AllServers()
         if (listen(server_fd, MAX_CLIENTS) < 0)
         {
             perror("Listen failed");
-            // fprintf(stderr, "listen() failed. (%d)\n", GETSOCKETERRNO());
             exit(EXIT_FAILURE);
         } // listens for incoming connections on the server socket (server_fd)
         std::cout << "Listening on port " << it->getPort() << std::endl;
@@ -220,7 +219,6 @@ int Servers::AllServers()
         fd_set tmp_read = read_fds;
         fd_set tmp_write = write_fds;
         int readySockets = select(maxFd + 1, &tmp_read, &tmp_write, NULL, NULL); // !
-        // std::cout << "__________under Select__________" << std::endl;
         if (readySockets < 0)
         {
             for (int fd = 0; fd <= maxFd; fd++)
@@ -238,11 +236,10 @@ int Servers::AllServers()
                     }
                 }
             }
-            continue; // !
+            continue;
         }
         for (std::map<int, Configuration>::iterator it = serverSockets.begin(); it != serverSockets.end(); it++)
         {
-            // std::cout << "loop over server sockets" << std::endl;
             if (FD_ISSET(it->first, &tmp_read))
             {
                 Client new_client;
@@ -262,14 +259,11 @@ int Servers::AllServers()
                 new_client._duplicated_servers = duplicated_servers;
                 new_client.initDefaultErrorPages();
                 _client.push_back(new_client);
-                if (clientSocketw > 0) { // !
+                if (clientSocketw > 0)
+                {
                     std::cout << "add " << clientSocketw << " to the read_fds" << std::endl;
                     FD_SET(clientSocketw, &read_fds);
                 }
-                // else {
-                //    std::cout << "FD_SET fails To add the clientSocketw to read_fds" << std::endl;
-                //    exit(20);
-                // } 
             }
         }
         const std::string FAVICON_PATH = "/favicon.ico";
@@ -277,11 +271,9 @@ int Servers::AllServers()
         {
             if (FD_ISSET(its->GetSocketId(), &tmp_read))
             {
-                // std::cout << "\e[1;34mreading request [client socket: " << its->GetSocketId() << "]\e[0m" << std::endl;
                 char buffer[1024] = {0};
                 // Read the HTTP request from the client
                 ssize_t bytesRead = recv(its->GetSocketId(), buffer, sizeof(buffer) - 1, 0);
-                // std::string s(buffer, bytesRead);
                 if (bytesRead < 0)
                 {
                     perror("Error reading from socket");
@@ -308,38 +300,27 @@ int Servers::AllServers()
                     std::string buf(buffer, bytesRead);
                     its->response._upload = its->getServer().getUpload();
                     std::cout << buf << std::endl;
-                    // if (strstr(buffer, FAVICON_PATH.c_str()) == NULL)
-                    // {
-                        // its->_isFavicon = false;
-                        if (!its->response.parseHttpRequest(buf))
+                    if (!its->response.parseHttpRequest(buf))
+                    {
+                        FD_CLR(its->GetSocketId(), &read_fds);
+                        std::cout << "add " << its->GetSocketId() << " to write_fds " << std::endl;
+                        FD_SET(its->GetSocketId(), &write_fds);                         
+                    }
+                    if (conditions)
+                    {
+                        for (std::vector<Configuration>::iterator it = duplicated_servers.begin(); it != duplicated_servers.end(); it++)
                         {
-                            FD_CLR(its->GetSocketId(), &read_fds);
-                            std::cout << "add " << its->GetSocketId() << " to write_fds " << std::endl;
-                            FD_SET(its->GetSocketId(), &write_fds);                         
-                        }
-                        if (conditions)
-                        {
-                            for (std::vector<Configuration>::iterator it = duplicated_servers.begin(); it != duplicated_servers.end(); it++)
+                            if (its->getServer().getPort() == it->getPort() && its->getServer().getHost() == it->getHost())
                             {
-                                if (its->getServer().getPort() == it->getPort() && its->getServer().getHost() == it->getHost())
+                                if (its->response._value == it->getServerNames())
                                 {
-                                    if (its->response._value == it->getServerNames())
-                                    {
-                                        its->set_server(*it);
-                                        break;
-                                    }
+                                    its->set_server(*it);
+                                    break;
                                 }
                             }
-                            conditions = false;
                         }
-                    // }
-                    // else
-                    // {
-                    //     its->_isFavicon = true;
-                    //     FD_CLR(its->GetSocketId(), &read_fds);
-                    //     std::cout << "add " << its->GetSocketId() << " to write_fds " << std::endl;
-                    //     FD_SET(its->GetSocketId(), &write_fds);
-                    // }
+                        conditions = false;
+                    }
                 }
             }
         }
@@ -352,9 +333,7 @@ int Servers::AllServers()
                 if (its->_status == 0)
                     its->ft_Response();
                 else if (its->_status == 1)
-                {
                     its->ft_send();
-                }
                 else if (its->_status == CGI)
                 {
                     its->_waitStatus = waitpid(its->_cgiPid, &its->_childExitStatus, WNOHANG);
@@ -378,28 +357,28 @@ int Servers::AllServers()
                             }
                         }
                     }
+                    else if (its->_waitStatus == -1)
+                        its->SendErrorPage(INTERNALSERVERERROR);
                     else if(std::time(NULL) - its->_cgiTimer >= TIMEOUT)
                     {
                         // std::cout << "TIME OUT  ====> current Time : " << std::time(NULL) << " _cgiTimer : " << its->_cgiTimer  << " result : " << std::time(NULL) - its->_cgiTimer << " TIMEOUT : " << TIMEOUT << std::endl;
                         kill(its->_cgiPid , SIGTERM);
-                        // waitpid(its->_cgiPid, 0, 0);
+                        waitpid(its->_cgiPid, 0, 0);
                         its->_cgiPid = -1;
                         its->SendErrorPage(REQUESTTIMEOUT);
                     }
                     // std::cout << "NOT TIME OUT   ====> current Time : " << std::time(NULL) << " _cgiTimer : " << its->_cgiTimer  << " result : " << std::time(NULL) - its->_cgiTimer << " TIMEOUT : " << TIMEOUT << std::endl;
                 }
-                // std::cout << its->_responseStatus << std::endl;
-                // std::cout << "_PID : " << its->_cgiPid << "r : " << r << std::endl;
-                if (its->_waitStatus == -1 || its->_responseStatus == -1 || its->_responseStatus == 0)
+                if (its->_responseStatus == -1 || its->_responseStatus == 0)
                 {
                     FD_CLR(its->GetSocketId(), &write_fds);
                     ft_close(its->GetSocketId());
                     ft_close(its->_content_fd);
-                    // if (its->_status == CGI && its->_cgiPid != -1)
-                    // {
-                    //     kill(its->_cgiPid , SIGKILL);
-                    //     waitpid(its->_cgiPid, 0, 0);
-                    // }
+                    if (its->_status == CGI && its->_cgiPid != -1)
+                    {
+                        kill(its->_cgiPid , SIGTERM);
+                        waitpid(its->_cgiPid, 0, 0);
+                    }
                     its = _client.erase(its);
                 }
                 else 

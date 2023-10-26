@@ -1,2 +1,2 @@
 while True:
-    print("Python test")
+    while 1
