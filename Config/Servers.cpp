@@ -71,7 +71,7 @@ int Servers::ConfigFileParse(std::string file)
                     // hna ndwz string kamlo (block) bach itparsa f configuration onmchi n9lb 3la next server f configfile
                     Configuration config(block);
                     _servers.push_back(config);
-                    std::cout  << "Servers size : " << _servers.size() << std::endl;
+                    // std::cout  << "Servers size : " << _servers.size() << std::endl;
                     //     std::cout << block[i] << std::endl;
                     // }
                     block.clear(); // Clear the block for the next server
@@ -349,25 +349,6 @@ int Servers::AllServers()
             if (FD_ISSET(its->GetSocketId(), &tmp_write))
             {
                 its->_responseStatus = -2;
-                // if (its->_isFavicon)
-                // {
-                //     std::stringstream ss;
-                //     struct stat statbuffer;
-                //     char buff[BUFFER_SIZE];
-                //     std::string header;
-
-                //     its->_content_fd = open(its->getServer().getErrorPages()[NOTFOUND].c_str(), O_RDONLY);
-                //     if (its->_content_fd < 0)
-                //         its->_content_fd = open(its->_defaultErrorPages[NOTFOUND].c_str(), O_RDONLY);
-                //     std::cout << " ERROR PAGE : " << its->_defaultErrorPages[NOTFOUND] << std::endl;
-                //     fstat(its->_content_fd, &statbuffer);
-                //     ss << statbuffer.st_size;
-                //     header = std::string("HTTP/1.1") + " 404 Not Found" + "\r\nContent-Length: " + ss.str() + "\r\n\r\n";
-                //     write(its->GetSocketId(), header.c_str(), header.size());
-                //     its->_status = 1;
-                //     its->_isFavicon = false;
-                //     std::cout << " IS FAVICON : " << its->response.getHttpVersion() << std::endl;
-                // }
                 if (its->_status == 0)
                     its->ft_Response();
                 else if (its->_status == 1)
@@ -380,28 +361,18 @@ int Servers::AllServers()
                     if (its->_waitStatus > 0)
                     {
                         if (WIFEXITED(its->_childExitStatus) && WEXITSTATUS(its->_childExitStatus))
-                        {
-                            std::cout << " ############################## "<< std::endl;
                             its->SendErrorPage(INTERNALSERVERERROR);
-                        }
                         else if (WIFSIGNALED(its->_childExitStatus))
-                        {
-                            std::cout << " !!!!!!!!!!!!!!!!!!!!!!!! "<< std::endl;
                             its->SendErrorPage(INTERNALSERVERERROR);
-                        }
                         else if (its->_waitStatus == its->_cgiPid)
                         {
                             its->_content_fd = open (its->_CgiFile.c_str(), O_RDONLY);
                             if (its->_content_fd < 0)
-                            {
-                                std::cout << " ******************************************* "<< std::endl;
                                 its->SendErrorPage(INTERNALSERVERERROR);
-                            }
                             else
                             {
                                 its->_CgiHeader.clear();
                                 its->readCgiHeader(its->_content_fd);
-                                std::cout << "CGI HEADER : " << its->_CgiHeader << std::endl;
                                 its->SendHeader(its->_content_fd);
                                 its->_status = 1;
                             }

@@ -128,15 +128,13 @@ std::string Request::GenerateFile(const std::string& UploadPath) {
     std::string timestamp = GenerateTimestamp();
 
     const char* dir_path = UploadPath.c_str();
-    std::cout<< " - - - - - - - - " << dir_path << " - - - - - - - - "<< std::endl;
-
     if (mkdir(dir_path, 0777) != 0 && errno != EEXIST) {
         std::cerr << "Failed to create directory: " << strerror(errno) << std::endl;
         return "";  // Return an empty string to indicate failure
     }
 
     std::string fileName = dir_path + timestamp + "_" + randomString;
-    std::cout << randomString << " " << timestamp << std::endl;
+    // std::cout << randomString << " " << timestamp << std::endl;
     _ofile = fileName;
     return _ofile;
 }
@@ -338,7 +336,7 @@ int    Request::parseHeaders()
     }
     else if (_method == "POST")
     {
-        std::string extension = extensions(); /// ! bdelha
+        std::string extension = extensions();
         _name = GenerateFile(_upload) + extension;
         _fd = open(_name.c_str(), O_RDWR | O_APPEND | O_CREAT, 0666);
         std::cout << "File created with number : " << _fd << std::endl;

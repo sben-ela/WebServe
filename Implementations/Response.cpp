@@ -50,17 +50,14 @@ std::string Client::GenerateDirectoryListing(const std::string& directoryPath) {
     html += "<h1>Directory Listing</h1>";
     html += "<table border='1'><tr><th>Name</th><th>Size</th><th>Date Modified</th></tr>";
     
-    // Open the directory
     DIR* dir = opendir(directoryPath.c_str());
     if (dir) {
         struct dirent* entry;
         while ((entry = readdir(dir))) {
             if (std::string(entry->d_name) != "." && std::string(entry->d_name) != "..") {
-                // Get file information
                 std::string filePath = directoryPath + "/" + entry->d_name;
                 struct stat fileStat;
                 if (stat(filePath.c_str(), &fileStat) == 0) {
-                    // Format file size
                     std::string fileSize;
                     if (S_ISDIR(fileStat.st_mode)) {
                         fileSize = "Directory";
@@ -70,11 +67,9 @@ std::string Client::GenerateDirectoryListing(const std::string& directoryPath) {
                         fileSize = ss.str() + " bytes";
                     }
 
-                    // Format date modified
                     char dateModified[100];
                     strftime(dateModified, sizeof(dateModified), "%D, %r", localtime(&fileStat.st_mtime));
 
-                    // Add row to the table
                     html += "<tr><td><a href='" + std::string(response.getPath() + entry->d_name) + "'>" + entry->d_name + "</a></td><td>" + fileSize + "</td><td>" + dateModified + "</td></tr>";
                 }
             }
@@ -100,16 +95,21 @@ void    Client::SendErrorPage(int errorNumber)
     struct stat statbuffer;
     char buff[BUFFER_SIZE];
     std::string header;
-    _content_fd = open(getServer().getErrorPages()[errorNumber].c_str(), O_RDONLY);
+    std::string error_page = getServer().getErrorPages()[errorNumber];
+    _content_fd = open(error_page.c_str(), O_RDONLY);
     if (_content_fd < 0)
-        _content_fd = open(_defaultErrorPages[errorNumber].c_str(), O_RDONLY);
+    {
+        error_page = _defaultErrorPages[errorNumber];
+        _content_fd = open(error_page.c_str(), O_RDONLY);
+    }
     fstat(_content_fd, &statbuffer);
     ss << statbuffer.st_size;
     if (errorNumber == MOVEDPERMANENTLY)
-        header = response.getHttpVersion() + response.getStatusCode()[errorNumber] + "\r\nContent-Type: text/html" 
+        header = response.getHttpVersion() + response.getStatusCode()[errorNumber] + "\r\n" + get_content_type(error_page)
         + "\r\nLocation: " + response.getPath() + "/" + "\r\n\r\n";
     else
-		header = response.getHttpVersion() + response.getStatusCode()[errorNumber] + "\r\nContent-Type: " + "text/html" + "\r\nContent-Length: " + ss.str() + "\r\n\r\n";
+		header = response.getHttpVersion() + response.getStatusCode()[errorNumber] + "\r\n" + get_content_type(error_page)
+        + "\r\nContent-Length: " + ss.str() + "\r\n\r\n";
     if (write(GetSocketId(), header.c_str(), header.size()) <= 0)
         throw(std::runtime_error("write Failed"));
     _status = 1;
@@ -126,10 +126,7 @@ std::string getExtention(const std::string& filePath)
 void    Client::ft_send( void )
 {
     char buff[BUFFER_SIZE];
-    if (!isOpen(_content_fd))
-        _responseStatus = -1;
-    if (!isOpen(GetSocketId()))
-        _responseStatus = -1;
+
     if ((_responseStatus = read(_content_fd, buff, BUFFER_SIZE)) > 0)
     {
         if (write(GetSocketId(), buff, _responseStatus) <= 0)
@@ -146,28 +143,13 @@ void    Client::SendHeader(int fd)
 
     fstat(fd, &statbuffer);
     ss << statbuffer.st_size - _CgiHeader.size();
-    // std::cout << "[" << get_content_type() << "]" << std::endl; // ! ila makanx l content Type valid Send BadGetway =====> khas dzadd
     if (_status == CGI)
-    {
-        std::cout << "{{{{{{{{{{{{{{{{{{{{{{{{{ " << getCookie() << " }}}}}}}}}}}}}}}}}}}}}}}}}" << std::endl;
-        std::cout << " COOOKIEEEE : " << getCookie()  << ":" << std::endl;
-        header = response.getHttpVersion() + response.getStatusCode()[response.getResponseStatus()] + "\r\n" + get_content_type() + "\r\nContent-Length: " + ss.str() + (getCookie() != "\r\n" ? getCookie() : "") + "\r\n\r\n";
-        std::cout << "header : " << header << std::endl;
-    }
+        header = response.getHttpVersion() + response.getStatusCode()[response.getResponseStatus()] + "\r\n" + get_content_type(response.getPath()) + "\r\nContent-Length: " + ss.str() + (getCookie() != "\r\n" ? getCookie() : "") + "\r\n\r\n";
     else
-        header = response.getHttpVersion() + response.getStatusCode()[response.getResponseStatus()] + "\r\n" + get_content_type() + "\r\nContent-Length: " + ss.str() + "\r\n\r\n";
+        header = response.getHttpVersion() + response.getStatusCode()[response.getResponseStatus()] + "\r\n" + get_content_type(response.getPath()) + "\r\nContent-Length: " + ss.str() + "\r\n\r\n";
     if (write(GetSocketId(), header.c_str(), header.size()) <= 0)
         throw(std::runtime_error("write Failed"));
 }
-
-// void ft_time(void)
-// {
-// 	struct timeval	t;
-
-// 	gettimeofday(&t, NULL);
-//     std::cout << "Seconds : " << t.tv_sec << " Micro : " << t.tv_usec  << std::endl;
-// }
-
 
 void    Client::Reply( void )
 {
@@ -194,13 +176,6 @@ void    Client::Reply( void )
                 dup2(bodyFd, STDIN_FILENO);
                 ft_close(bodyFd);
             }
-
-            // std::cerr << "======================================================" << std::endl;
-            // for (int i = 0; _env[i]; i++) {
-            //     std::cerr << " : =============== : " << _env[i] << std::endl;
-            // }
-            // std::cerr << "======================================================" << std::endl;
-
             execve(Path[0], Path, _env);
             deleteEnv();
             std::cout << "ERRRRORRR" << std::endl;
@@ -315,14 +290,6 @@ void    Client::readCgiHeader( int fd )
     }
 }
 
-// void    Client::checkIndexFile(const std::string& indexFile, const std::string& targetPath)
-// {
-//     if (getExtention(indexFile) != ".php" && getExtention(indexFile) != ".py")
-//         Delete_dir(targetPath);
-//     else
-//         DirectoryHasIndexFile(indexFile);
-// }
-
 /// @brief delete directory
 void    Delete_dir(const std::string& folderPath)
 {
@@ -376,11 +343,10 @@ void    Client::ft_Response( void )
     {
         _content_fd = -1;
         signal(SIGPIPE, SIG_IGN);
-        std::cout << "*****÷*************** START-RESPONSE  " << "*******************" << std::endl;
+        std::cout << "*****÷*************** START-RESPONSE *******************" << std::endl;
         response.CreateStatusCode();
         initLocationIndex();
         setTargetPath();
-        std::cout << "_targetPath "  << _targetPath << std::endl;
         initMethods(methods, getServer().getLocations()[_locationIndex].getLimit_except());
         if (access(_targetPath.c_str(), F_OK))
             SendErrorPage(NOTFOUND);
@@ -401,7 +367,6 @@ void    Client::ft_Response( void )
                 SendErrorPage(FORBIDDEN);
             else
             {
-                system(("cp -R " +_targetPath + " /tmp").c_str());
                 ft_delete();
                 if (_status != 1)
                     SendErrorPage(NOCONTENT);
@@ -419,10 +384,7 @@ void    Client::ft_Response( void )
                 Reply();
         }
         else
-        {
-            std::cout << "NOTIMPLEMENTED" << std::endl;
             SendErrorPage(NOTIMPLEMENTED);
-        }
     }
     catch(std::exception &e)
     {
@@ -433,10 +395,6 @@ void    Client::ft_Response( void )
     {
         _responseStatus = -1;
         std::cout << e << std::endl;
-    } 
-    catch(const int e)
-    {
-        std::cout << " Catch int : " << e << std::endl;
     }
     catch(...)
     {
@@ -449,10 +407,7 @@ bool isOpen(int fd)
 {
     struct stat buff;
     if (fstat(fd, &buff) == -1)
-    {
-        // std::cout << "invalid Fd " << std::endl;
         return (false);
-    }
     return(true);
 }
 
@@ -460,6 +415,5 @@ void ft_close(int fd)
 {
     if (fd == -1)
         return ;
-    // std::cout << "*****************************************************************" << "close : " << fd << std::endl;
     close (fd);
 }

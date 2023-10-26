@@ -98,7 +98,6 @@ void Client::fullMapEnv()
 
 void Client::initDefaultErrorPages(void)
 {
-    // std::cout << "inti error pages" << std::endl;
     _defaultErrorPages[MOVEDPERMANENTLY] = "Errors/301.html";
     _defaultErrorPages[NOTALLOWED] = "Errors/405.html";
     _defaultErrorPages[BADREQUEST] = "Errors/400.html";
@@ -120,8 +119,6 @@ std::string Client::findKey(const std::string &key)
     size_t start;
     size_t end;
 
-    std::cout << "*************************CGI HEADER : "  << _CgiHeader << std::endl;
-    // exit(127);
     start = _CgiHeader.find(key);
     if (start == std::string::npos)
     {
@@ -157,14 +154,17 @@ void Client::deleteEnv()
     delete[] _env;
 }
 
-std::string Client::get_content_type(void)
+std::string Client::get_content_type(const std::string& Path)
 {
-    std::string key;
+    if (_status == CGI)
+    {
+        std::string key;
 
-    key = findKey("Content-Type");
-    if (!key.empty())
-        return (key);
-    const char *last_dot = strrchr(response.getPath().c_str(), '.');
+        key = findKey("Content-Type");
+        if (!key.empty())
+            return (key);
+    }
+    const char *last_dot = strrchr(Path.c_str(), '.');
     if (last_dot)
     {
         if (strcmp(last_dot, ".css") == 0)

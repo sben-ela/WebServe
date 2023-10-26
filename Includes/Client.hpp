@@ -63,7 +63,7 @@ class Client
         void    readCgiHeader( int fd );
         void    SendHeader(int fd);
         const std::stringstream&    getFileSize(int fd);
-    std::string get_content_type( void );
+    std::string get_content_type(const std::string& Path);
         void    fullMapEnv();
         void    fullEnv();
         void    deleteEnv();
