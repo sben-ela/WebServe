@@ -126,7 +126,6 @@ std::string getExtention(const std::string& filePath)
 void    Client::ft_send( void )
 {
     char buff[BUFFER_SIZE];
-
     if ((_responseStatus = read(_content_fd, buff, BUFFER_SIZE)) > 0)
     {
         if (write(GetSocketId(), buff, _responseStatus) < 0)
@@ -166,7 +165,7 @@ void    Client::Reply( void )
             if (_content_fd < 0)
                 throw(std::runtime_error("Open Failed in child to open : " + _CgiFile));
             dup2(_content_fd, STDOUT_FILENO);
-            ft_close(_content_fd);
+            // ft_close(_content_fd);
             ft_close(STDERR_FILENO);
             if (response.getMethod() == "POST")
             {
@@ -186,7 +185,7 @@ void    Client::Reply( void )
     {
         _content_fd = open (_targetPath.c_str(), O_RDONLY);
         if (_content_fd < 0)
-            throw(std::runtime_error("Open Failed in GgI"));
+            throw(std::runtime_error("Open Failed in Reply"));
     }
     SendHeader(_content_fd);
     _status = 1; 
@@ -228,10 +227,10 @@ void    Client::handleDirectory(const std::string& filePath)
         if (getServer().getLocations()[_locationIndex].getAutoIndex())
         {
             std::stringstream ss;
-            std::string test = GenerateDirectoryListing(filePath);
-            ss << test.size();
-            std::string header = response.getHttpVersion() + response.getStatusCode()[200] + "\r\nContent-Type: " + "text/html" + "\r\nContent-Length: " + ss.str() + "\r\n\r\n";
-            if (write(GetSocketId(), (header + test).c_str() , header.size() + test.size()) < 0)
+            std::string DirectoryListing = GenerateDirectoryListing(filePath);
+            ss << DirectoryListing.size();
+            std::string header = response.getHttpVersion() + response.getStatusCode()[OK] + "\r\nContent-Type: " + "text/html" + "\r\nContent-Length: " + ss.str() + "\r\n\r\n";
+            if (write(GetSocketId(), (header + DirectoryListing).c_str() , header.size() + DirectoryListing.size()) < 0)
                 throw(std::runtime_error("write Failed"));
             _responseStatus = -1;
         }

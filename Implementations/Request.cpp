@@ -195,7 +195,7 @@ int    Request::processBody()
         {
             std::cout << "Body ended ..." << std::endl;
             setResponseStatus(OK);
-            close(_fd);
+            ft_close(_fd);
             _fd = open(_name.c_str(), O_RDWR);
             return 0;
         }
@@ -212,7 +212,7 @@ int    Request::processBody()
             {
                 std::cout << "Body ended ..." << std::endl;
                 setResponseStatus(OK);
-                close(_fd);
+                ft_close(_fd);
                 _fd = open(_name.c_str(), O_RDWR);
                 return 0;
             }
@@ -349,7 +349,6 @@ int    Request::parseHeaders()
         std::string extension = extensions();
         _name = GenerateFile(_upload) + extension;
         _fd = open(_name.c_str(), O_RDWR | O_APPEND | O_CREAT, 0666);
-        std::cout << "File created with number : " << _fd << std::endl;
         if (_fd == -1) {
             std::cerr << "Failed to open the file." << std::endl;
             return 0;
@@ -381,7 +380,7 @@ int Request::processAllBody()
         return 1;
     }
     setResponseStatus(OK);
-    close(_fd);
+    ft_close(_fd);
     _fd = open(_name.c_str(), O_RDWR);
     return 0;
 }

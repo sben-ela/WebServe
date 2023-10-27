@@ -326,7 +326,7 @@ int Servers::AllServers()
             if (FD_ISSET(its->GetSocketId(), &tmp_write))
             {
                 its->_responseStatus = -2;
-                if (its->_status == 0)
+                if (its->_status == 0  || !its->_content_fd)
                     its->ft_Response();
                 else if (its->_status == 1)
                     its->ft_send();
@@ -357,24 +357,22 @@ int Servers::AllServers()
                         its->SendErrorPage(INTERNALSERVERERROR);
                     else if(std::time(NULL) - its->_cgiTimer >= TIMEOUT)
                     {
-                        // std::cout << "TIME OUT  ====> current Time : " << std::time(NULL) << " _cgiTimer : " << its->_cgiTimer  << " result : " << std::time(NULL) - its->_cgiTimer << " TIMEOUT : " << TIMEOUT << std::endl;
                         kill(its->_cgiPid , SIGTERM);
                         waitpid(its->_cgiPid, 0, 0);
                         its->_cgiPid = -1;
                         its->SendErrorPage(REQUESTTIMEOUT);
                     }
-                    // std::cout << "NOT TIME OUT   ====> current Time : " << std::time(NULL) << " _cgiTimer : " << its->_cgiTimer  << " result : " << std::time(NULL) - its->_cgiTimer << " TIMEOUT : " << TIMEOUT << std::endl;
                 }
                 if (its->_responseStatus == -1 || its->_responseStatus == 0)
                 {
                     FD_CLR(its->GetSocketId(), &write_fds);
                     ft_close(its->GetSocketId());
                     ft_close(its->_content_fd);
-                    if (its->_status == CGI && its->_cgiPid != -1)
-                    {
-                        kill(its->_cgiPid , SIGTERM);
-                        waitpid(its->_cgiPid, 0, 0);
-                    }
+                    // if (its->_status == CGI && its->_cgiPid != -1)
+                    // {
+                    //     kill(its->_cgiPid , SIGTERM);
+                    //     waitpid(its->_cgiPid, 0, 0);
+                    // }
                     its = _client.erase(its);
                 }
                 else 
