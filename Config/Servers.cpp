@@ -368,11 +368,8 @@ int Servers::AllServers()
                     FD_CLR(its->GetSocketId(), &write_fds);
                     ft_close(its->GetSocketId());
                     ft_close(its->_content_fd);
-                    // if (its->_status == CGI && its->_cgiPid != -1)
-                    // {
-                    //     kill(its->_cgiPid , SIGTERM);
-                    //     waitpid(its->_cgiPid, 0, 0);
-                    // }
+                    if (its->response.getFd() !=-1)
+                        ft_close(its->response.getFd());
                     its = _client.erase(its);
                 }
                 else 

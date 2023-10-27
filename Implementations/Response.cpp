@@ -165,7 +165,7 @@ void    Client::Reply( void )
             if (_content_fd < 0)
                 throw(std::runtime_error("Open Failed in child to open : " + _CgiFile));
             dup2(_content_fd, STDOUT_FILENO);
-            // ft_close(_content_fd);
+            ft_close(_content_fd);
             ft_close(STDERR_FILENO);
             if (response.getMethod() == "POST")
             {

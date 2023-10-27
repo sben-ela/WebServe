@@ -12,7 +12,7 @@
 
 #include "../Includes/Request.hpp"
 
-Request::Request() : _transferEncodingChunked(false), _transferEncoding(false), _contentLength(false), _headers_done(false), _condition(false), _chunked(false) {
+Request::Request() : _transferEncodingChunked(false), _transferEncoding(false), _contentLength(false), _headers_done(false), _condition(false), _chunked(false), _fd(-1) {
     _responseStatus = OK;
     _total = 0;
 }
