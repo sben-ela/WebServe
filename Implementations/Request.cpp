@@ -13,7 +13,7 @@
 #include "../Includes/Request.hpp"
 
 Request::Request() : _transferEncodingChunked(false), _transferEncoding(false), _contentLength(false), _headers_done(false), _condition(false), _chunked(false) {
-    _responseStatus = 200;
+    _responseStatus = OK;
     _total = 0;
 }
 
@@ -194,7 +194,7 @@ int    Request::processBody()
         if (!chunksize)
         {
             std::cout << "Body ended ..." << std::endl;
-            setResponseStatus(200);
+            setResponseStatus(OK);
             close(_fd);
             _fd = open(_name.c_str(), O_RDWR);
             return 0;
@@ -204,14 +204,14 @@ int    Request::processBody()
             std::string str = _bodies.substr(crlf_pos + 2, chunksize);
             if (write(_fd, str.c_str(), chunksize) < 0)
             {
-                setResponseStatus(500);
+                setResponseStatus(INTERNALSERVERERROR);
                 return 0;
             }
             _bodies = _bodies.substr(chunksize + 2 + crlf_pos + 2);
             if (_bodies == "0\r\n\r\n")
             {
                 std::cout << "Body ended ..." << std::endl;
-                setResponseStatus(200);
+                setResponseStatus(OK);
                 close(_fd);
                 _fd = open(_name.c_str(), O_RDWR);
                 return 0;
@@ -234,19 +234,18 @@ int    Request::parseHeaders()
     // Read the first line (request line)
     if (!std::getline(requestStream, line)) {
         // Handle an empty or incomplete request
-        setResponseStatus(400);
+        setResponseStatus(BADREQUEST);
         return 0;
     }
     std::istringstream requestLineStream(line);
     if (!(requestLineStream >> _method >> _path >> _httpVersion)) {
         // Handle invalid request line
-        setResponseStatus(400);
+        setResponseStatus(BADREQUEST);
         return 0;
     }
-    std::cout << "|" << _path << "|" << std::endl;
     if (_path.length() > 2048)
     {
-        setResponseStatus(414);
+        setResponseStatus(URLTOOLONGE);
         return 0;
     }
     if (!_path.empty())
@@ -256,14 +255,15 @@ int    Request::parseHeaders()
         {
             if (str.find(_path[i]) == std::string::npos)
             {
-                setResponseStatus(400);
+                setResponseStatus(BADREQUEST);
                 return 0;
             }
         }
         while (1)
         {
             size_t found = _path.find("%");
-            if (found != std::string::npos) {
+            if (found != std::string::npos)
+            {
                 std::string firstPart = _path.substr(0, found);
                 std::string secondPart = _path.substr(found + 3);
                 std::string number = _path.substr(found + 1, 2);
@@ -276,7 +276,7 @@ int    Request::parseHeaders()
                 }
                 else
                 {
-                    std::cerr << "Invalid value of hexadecimal !" << std::endl;
+                    setResponseStatus(BADREQUEST);
                     return 0;
                 }
             }
@@ -284,7 +284,8 @@ int    Request::parseHeaders()
                 break ;
         }
         size_t found = _path.find("?");
-        if (found != std::string::npos) {
+        if (found != std::string::npos)
+        {
             _queryString = _path.substr(found + 1);  // Get the substring after the '?'
             _path = _path.substr(0, found);  // Get the substring before the '?'
         }
@@ -325,13 +326,12 @@ int    Request::parseHeaders()
     }
     if (_length > _client_max_body_size && _client_max_body_size != 0)
     {
-        std::cout << "WTFF : " <<  _length << "   " << _client_max_body_size << std::endl;
-        setResponseStatus(413);
+        setResponseStatus(CONTENTTOLARGE);
         return 0;
     }
     if (_transferEncodingChunked)
     {
-        setResponseStatus(501);
+        setResponseStatus(NOTIMPLEMENTED);
         return 0;
     }
     if (!_transferEncoding && !_contentLength && _method == "POST")
@@ -341,7 +341,7 @@ int    Request::parseHeaders()
     }
     if (_method == "GET" || _method == "DELETE")
     {
-        setResponseStatus(200);
+        setResponseStatus(OK);
         return 0;
     }
     else if (_method == "POST")
@@ -361,7 +361,7 @@ int    Request::parseHeaders()
     }
     else
     {
-        setResponseStatus(501);
+        setResponseStatus(NOTIMPLEMENTED);
         return 0;
     }
     return 1;
@@ -371,21 +371,18 @@ int Request::processAllBody()
 {
     if (write(_fd, _bodies.c_str(), _bodies.length()) < 0)
     {
-        setResponseStatus(500);
+        setResponseStatus(INTERNALSERVERERROR);
         return 0;
     }
     _total += _bodies.length();
-    std::cout << _total << "|" << _length << std::endl;
     if (_total < _length)
     {
         _condition = true;
         return 1;
     }
-    setResponseStatus(200);
-    std::cout << "File descriptopor  ALlBODY : " << _fd << std::endl;
+    setResponseStatus(OK);
     close(_fd);
     _fd = open(_name.c_str(), O_RDWR);
-    std::cout << "File descriptopor  ALlBODY after : " << _fd << std::endl;
     return 0;
 }
 

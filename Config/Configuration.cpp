@@ -290,7 +290,6 @@ Configuration& Configuration::operator=(const Configuration& other)
 
 void Configuration::InitCgi(std::string path, std::string lang)
 {
-    std::cout << "Print cgi  " << lang << "  " << path << std::endl;
     if (!lang.empty() && !path.empty())
     {
         // Store the CGI setting in the _cgi map.

@@ -90,7 +90,7 @@ int Servers::ConfigFileParse(std::string file)
             block.push_back(line); // If any non-whitespace character is found
     }
     File.close();
-    printServerData();
+    // printServerData();
     if (_servers.size() > 1)
         checkServers();
     AllServers();
@@ -176,7 +176,6 @@ int Servers::AllServers()
             }
             if (bind(server_fd, p->ai_addr, p->ai_addrlen) == -1)
             {
-                std::cout << it->getHost() << "|" << it->getPort() << std::endl;
                 ft_close(server_fd);
                 perror("server: bind");
                 continue;
@@ -227,8 +226,6 @@ int Servers::AllServers()
                 {
                     if (!isOpen(fd))
                     {
-                        std::cout << "Closed Fd : " << fd << std::endl;
-                        // exit(1);
                         if (FD_ISSET(fd, &tmp_read))
                             FD_CLR(fd, &read_fds);
                         else
@@ -251,7 +248,6 @@ int Servers::AllServers()
                     perror("Error accepting connection");
                     continue;
                 }
-                std::cout << "\e[1;32m" << "ps: " << it->first << " accept new connection\e[0m: " << clientSocketw << std::endl;
                 if (clientSocketw > maxFd)
                     maxFd = clientSocketw;
                 new_client.set_socket(clientSocketw);
@@ -259,10 +255,10 @@ int Servers::AllServers()
                 new_client._duplicated_servers = duplicated_servers;
                 new_client._root = it->second.getRoot();
                 new_client.initDefaultErrorPages();
+                new_client._status = 0;
                 _client.push_back(new_client);
                 if (clientSocketw > 0)
                 {
-                    std::cout << "add " << clientSocketw << " to the read_fds" << std::endl;
                     FD_SET(clientSocketw, &read_fds);
                 }
             }
@@ -301,12 +297,9 @@ int Servers::AllServers()
                     std::string buf(buffer, bytesRead);
                     its->response._upload = its->getServer().getUpload();
                     its->response._client_max_body_size = its->getServer().getClientMaxBodySize();
-                    std::cout << "T7IYDHA N7WIK : " <<  its->response._client_max_body_size << std::endl;
-                    std::cout << buf << std::endl;
                     if (!its->response.parseHttpRequest(buf))
                     {
                         FD_CLR(its->GetSocketId(), &read_fds);
-                        std::cout << "add " << its->GetSocketId() << " to write_fds " << std::endl;
                         FD_SET(its->GetSocketId(), &write_fds);                         
                     }
                     if (conditions)
@@ -374,7 +367,6 @@ int Servers::AllServers()
                 }
                 if (its->_responseStatus == -1 || its->_responseStatus == 0)
                 {
-                    std::cout << "CLOSE CLIENT" << std::endl;
                     FD_CLR(its->GetSocketId(), &write_fds);
                     ft_close(its->GetSocketId());
                     ft_close(its->_content_fd);

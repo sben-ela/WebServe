@@ -86,7 +86,7 @@ std::string getFileName(const std::string& path, size_t first)
 {
 
     std::string fileName = path.substr(first);
-    return("/" + fileName);
+    return(fileName);
 }
 
 void    Client::SendErrorPage(int errorNumber)
@@ -142,7 +142,6 @@ void    Client::SendHeader(int fd)
 
     fstat(fd, &statbuffer);
     ss << statbuffer.st_size - _CgiHeader.size();
-    std::cout << "path : " << _targetPath << std::endl;
     if (_status == CGI)
         header = response.getHttpVersion() + response.getStatusCode()[response.getResponseStatus()] + "\r\n" + get_content_type(_targetPath) + "\r\nContent-Length: " + ss.str() + (getCookie() != "\r\n" ? getCookie() : "") + "\r\n\r\n";
     else
@@ -343,17 +342,14 @@ void    Client::ft_Response( void )
     {
         _content_fd = -1;
         signal(SIGPIPE, SIG_IGN);
-        std::cout << "*****÷*************** START-RESPONSE *******************" << std::endl;
         response.CreateStatusCode();
         initLocationIndex();
         setTargetPath();
-        std::cout << "REPSONSE STATUS : " << response.getResponseStatus() << std::endl;
         if (response.getResponseStatus() != OK)
         {
             SendErrorPage(response.getResponseStatus());
             return ;
         }
-        std::cout << "TARGET PATH : " << _targetPath << std::endl; 
         initMethods(methods, getServer().getLocations()[_locationIndex].getLimit_except());
         if (access(_targetPath.c_str(), F_OK))
             SendErrorPage(NOTFOUND);
@@ -386,8 +382,6 @@ void    Client::ft_Response( void )
                 std::remove(response._name.c_str());
                 SendErrorPage(FORBIDDEN);
             }
-            else if (getServer().getLocations()[_locationIndex].getUpload().empty())
-                throw(std::runtime_error("empty upload path"));
             else if (isDirectory(_targetPath.c_str()))
                 handleDirectory(_targetPath);
             else
@@ -411,7 +405,6 @@ void    Client::ft_Response( void )
         _responseStatus = -1;
         std::cout << "EXEPTION " << std::endl;
     }
-    std::cout << "******************** END-RESPONSE *******************" << std::endl;
 }
 
 bool isOpen(int fd)
