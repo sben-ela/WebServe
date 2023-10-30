@@ -79,9 +79,6 @@ void Client::fullMapEnv()
     _mapEnv["SCRIPT_FILENAME"] = _targetPath;
     _mapEnv["REQUEST_METHOD"] = response.getMethod();
     _mapEnv["QUERY_STRING"] = response.getQueryString();
-    _mapEnv["HTTP_CONTENT_TYPE"] = "application/x-www-form-urlencoded";
-    _mapEnv["CONTENT_TYPE"] = "application/x-www-form-urlencoded";
-
     for (std::map<std::string, std::string>::const_iterator it = response.getHeaders().begin(); it != response.getHeaders().end(); it++)
     {
         if (it->first == "Cookie")
@@ -90,6 +87,11 @@ void Client::fullMapEnv()
         {
             _mapEnv["CONTENT_LENGTH"] = it->second;
             _mapEnv["HTTP_CONTENT_LENGTH"] = it->second;
+        }
+        else if (it->first == "Content-Type")
+        {
+            _mapEnv["HTTP_CONTENT_TYPE"] = "application/x-www-form-urlencoded";
+            _mapEnv["CONTENT_TYPE"] = "application/x-www-form-urlencoded";
         }
         else
             _mapEnv["HTTP_" + it->first] = it->second;
@@ -192,6 +194,10 @@ std::string Client::get_content_type(const std::string& Path)
             return "Content-Type: image/png";
         if (strcmp(last_dot, ".txt") == 0)
             return "Content-Type: text/plain";
+        if (strcmp(last_dot, ".php") == 0)
+            return "Content-Type: text/html";
+        if (strcmp(last_dot, ".py") == 0)
+            return "Content-Type: text/html";
     }
     return ("Content-Type: text/html");
 }

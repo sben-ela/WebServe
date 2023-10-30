@@ -193,7 +193,7 @@ int    Request::processBody()
         int chunksize = strtoul(chunk_size_str.c_str(), &endptr, 16);
         if (!chunksize)
         {
-            std::cout << "Body ended ..." << std::endl;
+            // std::cout << "Body ended ..." << std::endl;
             setResponseStatus(OK);
             ft_close(_fd);
             _fd = open(_name.c_str(), O_RDWR);
@@ -210,7 +210,7 @@ int    Request::processBody()
             _bodies = _bodies.substr(chunksize + 2 + crlf_pos + 2);
             if (_bodies == "0\r\n\r\n")
             {
-                std::cout << "Body ended ..." << std::endl;
+                // std::cout << "Body ended ..." << std::endl;
                 setResponseStatus(OK);
                 ft_close(_fd);
                 _fd = open(_name.c_str(), O_RDWR);

@@ -365,6 +365,7 @@ int Servers::AllServers()
                 }
                 if (its->_responseStatus == -1 || its->_responseStatus == 0)
                 {
+                    std::cout << "status : " << its->_childExitStatus << std::endl;
                     FD_CLR(its->GetSocketId(), &write_fds);
                     ft_close(its->GetSocketId());
                     ft_close(its->_content_fd);

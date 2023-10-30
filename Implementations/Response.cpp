@@ -89,6 +89,7 @@ std::string getFileName(const std::string& path, size_t first)
     return(fileName);
 }
 
+
 void    Client::SendErrorPage(int errorNumber)
 {
     std::stringstream ss;
@@ -110,8 +111,8 @@ void    Client::SendErrorPage(int errorNumber)
     else
 		header = response.getHttpVersion() + response.getStatusCode()[errorNumber] + "\r\n" + get_content_type(error_page)
         + "\r\nContent-Length: " + ss.str() + "\r\n\r\n";
-    if (write(GetSocketId(), header.c_str(), header.size()) < 0)
-        throw(std::runtime_error("write Failed"));
+    if (write(GetSocketId(), header.c_str(), header.size()) <= 0)
+        _responseStatus = -1;
     _status = 1;
 }
 
@@ -128,7 +129,7 @@ void    Client::ft_send( void )
     char buff[BUFFER_SIZE];
     if ((_responseStatus = read(_content_fd, buff, BUFFER_SIZE)) > 0)
     {
-        if (write(GetSocketId(), buff, _responseStatus) < 0)
+        if (write(GetSocketId(), buff, _responseStatus) <= 0)
             _responseStatus = -1;
     }
 }
@@ -145,8 +146,8 @@ void    Client::SendHeader(int fd)
         header = response.getHttpVersion() + response.getStatusCode()[response.getResponseStatus()] + "\r\n" + get_content_type(_targetPath) + "\r\nContent-Length: " + ss.str() + (getCookie() != "\r\n" ? getCookie() : "") + "\r\n\r\n";
     else
         header = response.getHttpVersion() + response.getStatusCode()[response.getResponseStatus()] + "\r\n" + get_content_type(_targetPath) + "\r\nContent-Length: " + ss.str() + "\r\n\r\n";
-    if (write(GetSocketId(), header.c_str(), header.size()) < 0)
-        throw(std::runtime_error("write Failed"));
+    if (write(GetSocketId(), header.c_str(), header.size()) <= 0)
+        _responseStatus = -1;
 }
 
 void    Client::Reply( void )
@@ -173,6 +174,7 @@ void    Client::Reply( void )
                 dup2(bodyFd, STDIN_FILENO);
                 ft_close(bodyFd);
             }
+            
             execve(Path[0], Path, _env);
             deleteEnv();
             std::cout << "ERRRRORRR" << std::endl;
@@ -211,7 +213,7 @@ bool    isDirectory(const char* path) {
 void    Client::DirectoryHasIndexFile(const std::string& indexFile)
 {
     _targetPath += indexFile;
-    if (file_exists(_targetPath) && !isDirectory(_targetPath.c_str())) // ! protect invalid index file
+    if (file_exists(_targetPath) && !isDirectory(_targetPath.c_str()))
         Reply();
     else
         SendErrorPage(NOTFOUND); 
@@ -316,12 +318,7 @@ void    Delete_dir(const std::string& folderPath)
 void    Client::ft_delete( void )
 {
     if (isDirectory(_targetPath.c_str()))
-    {
-        if (_targetPath[_targetPath.size() - 1] != '/')
-            SendErrorPage(CONFLICT);
-        else
-            Delete_dir(_targetPath);
-    }
+        Delete_dir(_targetPath);
     else
         std::remove(_targetPath.c_str());
 }
@@ -370,8 +367,7 @@ void    Client::ft_Response( void )
             else
             {
                 ft_delete();
-                if (_status != 1)
-                    SendErrorPage(NOCONTENT);
+                SendErrorPage(NOCONTENT);
             }
         }
         else if (response.getMethod() == "POST")
@@ -392,17 +388,16 @@ void    Client::ft_Response( void )
     catch(std::exception &e)
     {
         _responseStatus = -1;
-        std::cout << e.what() << std::endl;
+        // std::cout << e.what() << std::endl;
     } 
     catch(std::string &e)
     {
         _responseStatus = -1;
-        std::cout << e << std::endl;
+        // std::cout << e << std::endl;
     }
     catch(...)
     {
         _responseStatus = -1;
-        std::cout << "EXEPTION " << std::endl;
     }
 }
 
