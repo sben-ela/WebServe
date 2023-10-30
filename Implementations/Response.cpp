@@ -57,7 +57,8 @@ std::string Client::GenerateDirectoryListing(const std::string& directoryPath) {
             if (std::string(entry->d_name) != "." && std::string(entry->d_name) != "..") {
                 std::string filePath = directoryPath + "/" + entry->d_name;
                 struct stat fileStat;
-                if (stat(filePath.c_str(), &fileStat) == 0) {
+                if (stat(filePath.c_str(), &fileStat) == 0)
+                {
                     std::string fileSize;
                     if (S_ISDIR(fileStat.st_mode)) {
                         fileSize = "Directory";
@@ -302,7 +303,7 @@ void    Delete_dir(const std::string& folderPath)
         {
             if (target->d_type == DT_REG)
                 std::remove((folderPath + "/" + target->d_name).c_str());
-            else if (strcmp( target->d_name , ".") && strcmp( target->d_name , "..") && target->d_type == DT_DIR)
+            else if (strcmp(target->d_name , ".") && strcmp( target->d_name , "..") && target->d_type == DT_DIR)
             {
                 Delete_dir(folderPath + "/" + target->d_name);
                 rmdir((folderPath + "/" + target->d_name).c_str());

@@ -10,7 +10,7 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "../Includes/Servers.hpp"
+#include "Includes/Servers.hpp"
 //testing !!
 
 void sig_handler(int sig) {

@@ -38,7 +38,6 @@ class Configuration
     public:
         int                                              _socketfd; //
         Configuration();
-        // Configuration operator()(std::string host, std::string  port);
         Configuration(std::vector<std::string> vecteur);
         std::vector<std::string>    Tokenization(std::string line);
         Configuration(const Configuration& other);
@@ -62,7 +61,6 @@ class Configuration
         std::vector<int>             getCodes() const;
         size_t                       getClientMaxBodySize() const;
         bool                         getAutoIndex() const;
-        // static    void check_dup(std::string host, std::string port);
         std::string                 getHost() const;
         size_t                      getPort() const;
         std::string                 getServerNames() const;
@@ -72,6 +70,7 @@ class Configuration
         int                         getTypePath(std::string const path);
         friend std::ostream& operator<<(std::ostream& o, Configuration obj);
         bool    compareLocations(const Location& loc1, const Location& loc2);
+        std::string getCurrentDirectory();
         ~Configuration();
 };
 

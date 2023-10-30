@@ -80,6 +80,7 @@ class Client
         void    ft_send( void );
         void    ft_Response( void );
         std::string findKey(const std::string &key);
+        std::string getCurrentDirectory();
         // !
         ~Client();
 };

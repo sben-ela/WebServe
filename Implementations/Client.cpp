@@ -98,25 +98,36 @@ void Client::fullMapEnv()
     }
 }
 
+std::string Client::getCurrentDirectory()
+{
+    const int bufferSize = BUFFER_SIZE;
+    char buffer[bufferSize];
+    char* currentDir;
+    if ((currentDir = getcwd(buffer, bufferSize)) != NULL)
+        return currentDir;
+    std::cerr << "Invalid path" << std::endl;
+    exit(1);
+}
+
 void Client::initDefaultErrorPages(void)
 {
-    _defaultErrorPages[MOVEDPERMANENTLY] = _root + "Errors/301.html";
-    _defaultErrorPages[NOTALLOWED] = _root + "Errors/405.html";
-    _defaultErrorPages[BADREQUEST] = _root + "Errors/400.html";
-    _defaultErrorPages[UNAUTHORIZED] = _root + "Errors/401.html";
-    _defaultErrorPages[FORBIDDEN] = _root + "Errors/403.html";
-    _defaultErrorPages[NOTFOUND] = _root + "Errors/404.html";
-    _defaultErrorPages[REQUESTTIMEOUT] = _root + "Errors/408.html";
-    _defaultErrorPages[CONFLICT] = _root + "Errors/409.html";
-    _defaultErrorPages[INTERNALSERVERERROR] = _root + "Errors/500.html";
-    _defaultErrorPages[NOTIMPLEMENTED] = _root + "Errors/501.html";
-    _defaultErrorPages[BADGATEWAY] = _root + "Errors/502.html";
-    _defaultErrorPages[SERVICEUNAVAILABLE] = _root + "Errors/503.html";
-    _defaultErrorPages[GATEWAYTIMEOUT] = _root + "Errors/504.html";
-    _defaultErrorPages[NOCONTENT] = _root + "Errors/204.html";
-    _defaultErrorPages[CREATED] = _root + "Errors/201.html";
-    _defaultErrorPages[CONTENTTOLARGE] = _root + "Errors/413.html";
-    _defaultErrorPages[URLTOOLONGE] = _root + "Errors/414.html";
+    _defaultErrorPages[MOVEDPERMANENTLY] = getCurrentDirectory() + "/Errors/301.html";
+    _defaultErrorPages[NOTALLOWED] = getCurrentDirectory() + "/Errors/405.html";
+    _defaultErrorPages[BADREQUEST] = getCurrentDirectory() + "/Errors/400.html";
+    _defaultErrorPages[UNAUTHORIZED] = getCurrentDirectory() + "/Errors/401.html";
+    _defaultErrorPages[FORBIDDEN] = getCurrentDirectory() + "/Errors/403.html";
+    _defaultErrorPages[NOTFOUND] = getCurrentDirectory() + "/Errors/404.html";
+    _defaultErrorPages[REQUESTTIMEOUT] = getCurrentDirectory() + "/Errors/408.html";
+    _defaultErrorPages[CONFLICT] = getCurrentDirectory() + "/Errors/409.html";
+    _defaultErrorPages[INTERNALSERVERERROR] = getCurrentDirectory() + "/Errors/500.html";
+    _defaultErrorPages[NOTIMPLEMENTED] = getCurrentDirectory() + "/Errors/501.html";
+    _defaultErrorPages[BADGATEWAY] = getCurrentDirectory() + "/Errors/502.html";
+    _defaultErrorPages[SERVICEUNAVAILABLE] = getCurrentDirectory() + "/Errors/503.html";
+    _defaultErrorPages[GATEWAYTIMEOUT] = getCurrentDirectory() + "/Errors/504.html";
+    _defaultErrorPages[NOCONTENT] = getCurrentDirectory() + "/Errors/204.html";
+    _defaultErrorPages[CREATED] = getCurrentDirectory() + "/Errors/201.html";
+    _defaultErrorPages[CONTENTTOLARGE] = getCurrentDirectory() + "/Errors/413.html";
+    _defaultErrorPages[URLTOOLONGE] = getCurrentDirectory() + "/Errors/414.html";
 }
 
 std::string Client::findKey(const std::string &key)

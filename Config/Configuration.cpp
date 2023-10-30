@@ -35,10 +35,21 @@ bool Configuration::isStringAllDigits(const std::string& str) {
     return (pos == std::string::npos);
 }
 
+std::string Configuration::getCurrentDirectory()
+{
+    char buffer[BUFFER_SIZE];
+    char* currentDir;
+    if ((currentDir = getcwd(buffer, BUFFER_SIZE)) != NULL)
+        return currentDir;
+    std::cerr << "Error in the current directory" << std::endl;
+    exit (1);
+}
+
 Configuration::Configuration(std::vector<std::string> vecteur)
     : _host("127.0.0.1"), _client_max_body_size(0),  _AutoIndex(false), _root_exists(false),
     _port(0), _host_exists(false), _port_exists(false)
 {
+    getCurrentDirectory();
     TokenVectsIter begin = vecteur.begin();
     TokenVectsIter end = vecteur.end();
     while (begin != end)
@@ -162,7 +173,7 @@ Configuration::Configuration(std::vector<std::string> vecteur)
         else
             begin++;
     }
-    if (getRoot().empty())
+    if (getRoot().empty() || getRoot()[getRoot().length() - 1] != '/')
 		throw std::string("No root found");
 	if (getHost().empty())
 		InitHost("localhost");
