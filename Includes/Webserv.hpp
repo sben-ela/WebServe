@@ -73,8 +73,7 @@ void     sigintHandler(int signal);
 void    Delete_dir(const std::string& folderPath);
 void    ft_send(Client& client);
 void sig_handler(int sig);
-// ! new 
-// ? status Code
+
 #define HEADER_SIZE 67
 #define FILESIZE 10
 #define EXFIALE 13 

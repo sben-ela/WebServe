@@ -21,6 +21,5 @@ class Response : public Request
         Response(const Response& other);
         Response& operator=(const Response& other);
         void    Function();
-        // const char* get_content_type(const char* path);
         ~Response();
 };

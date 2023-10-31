@@ -6,7 +6,7 @@
 /*   By: aybiouss <aybiouss@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/05 09:26:09 by aybiouss          #+#    #+#             */
-/*   Updated: 2023/10/23 16:22:07 by aybiouss         ###   ########.fr       */
+/*   Updated: 2023/10/30 13:58:19 by aybiouss         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -56,12 +56,6 @@ Configuration::Configuration(std::vector<std::string> vecteur)
     {
         std::string line = *begin;
         std::vector<std::string> token = Tokenization(line);
-        // if (token.empty())
-        // {
-        //     // Skip empty lines.
-        //     ++begin;
-        //     continue;
-        // }
         if (token[0] == "host" && token.size() == 2)
         {
             ++begin;
@@ -157,11 +151,7 @@ Configuration::Configuration(std::vector<std::string> vecteur)
                 {
                 // Create a Location object and add it to the vector.
                     Location location(token[1], begin, endIt);
-                    // std::cout << location << std::endl;
-                    // std::cout << "********************************" << std::endl;
                     _locations.push_back(location);
-                    // ? hitax ma3amelx copy assignment
-                    // Move the iterator to the next position after the location block.
                     begin = endIt + 1; // Advance by 1 to skip the closing brace.
                 }
                 else
@@ -183,8 +173,6 @@ Configuration::Configuration(std::vector<std::string> vecteur)
         throw std::string("Location is duplicated");
     if (!getPort())
 		throw std::string("Port not found");
-    if (getServerNames().empty())
-        throw std::string("No server name");
     std::vector<int> it = getCodes();
     std::map<int, std::string> pages = getErrorPages();
     for (std::vector<int>::iterator it2 = it.begin(); it2 != it.end(); it2++)
@@ -193,8 +181,8 @@ Configuration::Configuration(std::vector<std::string> vecteur)
         {
     	    if (checkFile(this->_root + pages[*it2], 0) == -1 || checkFile(this->_root + pages[*it2], 4) == -1)
     	    	throw std::string ("Error page file :" + this->_root + pages[*it2] + " is not accessible");
-        } // ! l3iba
-    } // ! to be fixed !! 
+        }
+    }
     std::vector<Location> sortedLocations = _locations;
     int n = sortedLocations.size();
     for (int i = 0; i < n - 1; ++i)
@@ -211,7 +199,7 @@ Configuration::Configuration(std::vector<std::string> vecteur)
     }
     _locations.clear();
     _locations = sortedLocations;
-} //ila kant / katdir getcwd
+}
 
 bool    Configuration::compareLocations(const Location& loc1, const Location& loc2)
 {
@@ -250,7 +238,7 @@ int	Configuration::checkFile(std::string const path, int mode)
 	return (access(path.c_str(), mode));
 }
 
-/* check location for a dublicate */
+/* check location for a duplicate */
 bool Configuration::checkLocations() const
 {
     std::vector<Location> locations = getLocations();
@@ -478,8 +466,6 @@ std::ostream& operator<<(std::ostream& o, Configuration obj)
     {
         o << "Error pages: " << it->first << "  " << it->second << " " << std::endl;
     }
-    // o << std::endl;
-    // Output location blocks
     std::map<std::string, std::string> b = obj.getCgi();
     for (std::map<std::string, std::string>::iterator it = b.begin(); it != b.end(); it++)
     {

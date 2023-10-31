@@ -6,7 +6,7 @@
 /*   By: aybiouss <aybiouss@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/17 11:36:51 by sben-ela          #+#    #+#             */
-/*   Updated: 2023/10/23 17:45:48 by aybiouss         ###   ########.fr       */
+/*   Updated: 2023/10/30 13:37:01 by aybiouss         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,7 +30,9 @@ Response::~Response() {}
 
 void    Client::initLocationIndex( void )
 {
-	_locationIndex = _client_server.getLocations().size() - 1;;
+	_locationIndex = _client_server.getLocations().size() - 1;
+    if (_locationIndex == std::string::npos)
+        _locationIndex = -1;
 	while (_locationIndex > 0)
 	{
 		if (_client_server.getLocations()[_locationIndex].getpattern() == response.getPath().substr(0, _client_server.getLocations()[_locationIndex].getpattern().size()))
@@ -175,10 +177,8 @@ void    Client::Reply( void )
                 dup2(bodyFd, STDIN_FILENO);
                 ft_close(bodyFd);
             }
-            
             execve(Path[0], Path, _env);
             deleteEnv();
-            std::cout << "ERRRRORRR" << std::endl;
             exit(EXFIALE);
         }
         _status = CGI;
@@ -341,6 +341,11 @@ void    Client::ft_Response( void )
         signal(SIGPIPE, SIG_IGN);
         response.CreateStatusCode();
         initLocationIndex();
+        if (_locationIndex < 0)
+        {
+            SendErrorPage(NOTFOUND);
+            return ;
+        }
         setTargetPath();
         if (response.getResponseStatus() != OK)
         {
@@ -389,12 +394,10 @@ void    Client::ft_Response( void )
     catch(std::exception &e)
     {
         _responseStatus = -1;
-        // std::cout << e.what() << std::endl;
     } 
     catch(std::string &e)
     {
         _responseStatus = -1;
-        // std::cout << e << std::endl;
     }
     catch(...)
     {

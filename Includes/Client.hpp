@@ -36,21 +36,21 @@ class Client
     public :
         std::vector<Configuration>  _duplicated_servers;
         std::map<int, std::string> _defaultErrorPages;
-        std::string _CgiHeader;
-        std::string _CgiFile;
-        int         _content_fd;
-        int         _status;
-        std::time_t _cgiTimer;
-        int         _cgiPid;
-        ssize_t     _responseStatus;
-        Methods     methods;
-        bool        _isFavicon;
-        Response    response;
-        bool    _contentType;
-        int     _childExitStatus;
-        int     _waitStatus;
-        bool    _contentLenght;
-        std::string         _root;
+        std::string                _CgiHeader;
+        std::string                _CgiFile;
+        int                        _content_fd;
+        int                        _status;
+        std::time_t                _cgiTimer;
+        int                        _cgiPid;
+        ssize_t                    _responseStatus;
+        Methods                    methods;
+        bool                       _isFavicon;
+        Response                   response;
+        bool                       _contentType;
+        int                        _childExitStatus;
+        int                        _waitStatus;
+        bool                       _contentLenght;
+        std::string                _root;
         Client();
         Client(const Client& other);
         Client& operator=(const Client& other);
@@ -64,7 +64,7 @@ class Client
         void    readCgiHeader( int fd );
         void    SendHeader(int fd);
         const std::stringstream&    getFileSize(int fd);
-    std::string get_content_type(const std::string& Path);
+        std::string get_content_type(const std::string& Path);
         void    fullMapEnv();
         void    fullEnv();
         void    deleteEnv();
@@ -81,6 +81,5 @@ class Client
         void    ft_Response( void );
         std::string findKey(const std::string &key);
         std::string getCurrentDirectory();
-        // !
         ~Client();
 };

@@ -11,19 +11,12 @@
 /* ************************************************************************** */
 
 #include "Includes/Servers.hpp"
-//testing !!
-
-void sig_handler(int sig) {
-    (void)sig;
-    exit(0);
-}
 
 int main(int argc, char *argv[])
 {
     if (argc == 1 || argc == 2) {
 		try 
 		{
-            signal(SIGINT, sig_handler);
             Servers configFile;
             std::string		config;
             config = (argc == 1 ? "configuration/default.conf" : argv[1]);
