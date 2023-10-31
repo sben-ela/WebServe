@@ -16,9 +16,9 @@ $(NAME): $(OBJ)
 
 clean:
 	$(RM) $(OBJ)
-	$(RM) data/Post/*
 
 fclean: clean
 	$(RM) $(NAME)
+	$(RM) data/Post/*
 
 re: fclean $(NAME)
