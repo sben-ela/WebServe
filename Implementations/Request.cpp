@@ -12,7 +12,7 @@
 
 #include "../Includes/Request.hpp"
 
-Request::Request() : _transferEncodingChunked(false), _transferEncoding(false), _contentLength(false), _headers_done(false), _condition(false), _chunked(false), _fd(-1) {
+Request::Request() : _transferEncodingChunked(false), _transferEncoding(false), _contentLength(false), _headers_done(false), _fd(-1), _condition(false), _chunked(false) {
     _responseStatus = OK;
     _total = 0;
 }
@@ -250,7 +250,7 @@ int    Request::parseHeaders()
     if (!_path.empty())
     {
         std::string str = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._~:/?#[]@!$&'()*+,;=%";
-        for (int i = 0; i < _path.length(); i++)
+        for (int i = 0; i < (int)_path.length(); i++)
         {
             if (str.find(_path[i]) == std::string::npos)
             {

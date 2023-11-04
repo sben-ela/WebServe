@@ -176,6 +176,8 @@ void Location::InitIndex(std::string& value)
 
 void Location::InitPattern(std::string value)
 {
+    if (value[value.length() - 1] != '/')
+        value += '/';
     _pattern = value;
     _pattern_exists = true;
 }
@@ -221,6 +223,8 @@ void Location::InitCgi(std::string path, std::string lang)
 
 void Location::InitRoot(std::string value)
 {
+    if (value[value.length() - 1] != '/')
+        throw std::string("Fix root of the location");
     _root = value;
     _root_exists = true;
 }

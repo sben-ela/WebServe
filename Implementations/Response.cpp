@@ -97,10 +97,10 @@ void    Client::SendErrorPage(int errorNumber)
 {
     std::stringstream ss;
     struct stat statbuffer;
-    char buff[BUFFER_SIZE];
     std::string header;
     std::string error_page = getServer().getErrorPages()[errorNumber];
     _content_fd = open(error_page.c_str(), O_RDONLY);
+    
     if (_content_fd < 0)
     {
         error_page = _defaultErrorPages[errorNumber];
