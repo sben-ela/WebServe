@@ -6,7 +6,7 @@
 /*   By: aybiouss <aybiouss@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/04 13:11:31 by aybiouss          #+#    #+#             */
-/*   Updated: 2023/10/30 14:09:46 by aybiouss         ###   ########.fr       */
+/*   Updated: 2023/11/04 13:44:38 by aybiouss         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -285,6 +285,7 @@ int Servers::AllServers()
                 else
                 {
                     std::string buf(buffer, bytesRead);
+                    // std::cout << buf << std::endl;
                     its->response._upload = its->getServer().getUpload();
                     its->response._client_max_body_size = its->getServer().getClientMaxBodySize();
                     if (!its->response.parseHttpRequest(buf))

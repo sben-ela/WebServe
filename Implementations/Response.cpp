@@ -6,7 +6,7 @@
 /*   By: aybiouss <aybiouss@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/17 11:36:51 by sben-ela          #+#    #+#             */
-/*   Updated: 2023/10/30 13:37:01 by aybiouss         ###   ########.fr       */
+/*   Updated: 2023/11/04 11:32:01 by aybiouss         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -97,10 +97,10 @@ void    Client::SendErrorPage(int errorNumber)
 {
     std::stringstream ss;
     struct stat statbuffer;
+
     std::string header;
     std::string error_page = getServer().getErrorPages()[errorNumber];
     _content_fd = open(error_page.c_str(), O_RDONLY);
-    
     if (_content_fd < 0)
     {
         error_page = _defaultErrorPages[errorNumber];
@@ -157,7 +157,7 @@ void    Client::Reply( void )
 {
     if (response.GetFileExtention() == ".php" || response.GetFileExtention() == ".py")
     {
-        _CgiFile = response.GenerateFile("/Users/sben-ela/goinfre/");
+        _CgiFile = response.GenerateFile("/Users/aybiouss/goinfre/");
         _cgiTimer = std::time(NULL);
         _cgiPid = fork();
         if (!_cgiPid)

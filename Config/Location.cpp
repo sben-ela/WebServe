@@ -6,7 +6,7 @@
 /*   By: aybiouss <aybiouss@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/05 09:26:06 by aybiouss          #+#    #+#             */
-/*   Updated: 2023/10/30 13:35:01 by aybiouss         ###   ########.fr       */
+/*   Updated: 2023/11/04 13:34:39 by aybiouss         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -224,7 +224,7 @@ void Location::InitCgi(std::string path, std::string lang)
 void Location::InitRoot(std::string value)
 {
     if (value[value.length() - 1] != '/')
-        throw std::string("Fix root of the location");
+        throw std::string("Fix root of location");
     _root = value;
     _root_exists = true;
 }
